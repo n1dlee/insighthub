@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Student Profile Page</title>
+    <link rel="stylesheet" href="assets/css/styles.css" />
+  </head>
+  <body>
+    <header>
+      <div class="hcontainer">
+        <a class="h1-style" href="/investor-main"><h1>InsightHub</h1></a>
+        <nav class="icon-bar">
+          <div class="user-profile-wrapper" aria-haspopup="true">
+            <div class="user-profile">
+              <img src="assets/icons/default-image.png" alt="User Profile" />
+            </div>
+            <ul class="dropdown-menu" role="menu" aria-hidden="true">
+              <li role="menuitem"><span class="user-name">User</span></li>
+              <li role="menuitem">
+                <a href="/investor-profile"><i class="profile-icon"></i> View Profile</a>
+              </li>
+              <li role="menuitem">
+                <a href="/logout"><i class="logout-icon"></i> Log Out</a>
+              </li>
+            </ul>
+          </div>
+        </nav>
+      </div>
+    </header>
+
+    <div class="profile-page-student">
+      <div class="profile-content">
+        <img
+          class="background-image"
+          src="assets/icons/background.png"
+          alt="Background Image"
+        />
+        <div class="content-wrapper">
+          <div class="content-columns">
+            <div class="profile-sidebar">
+              <div class="sidebar-content">
+                <div class="profile-details">
+                  <div class="profile-image-container">
+                    <img
+                      class="profile-image"
+                      src="assets/icons/default-pic.png"
+                      alt="Profile Image"
+                    />
+                  </div>
+                  <div class="education-info" id="student-education">
+                    Education: N/A
+                  </div>
+                  <div class="divider"></div>
+                  <div class="major-info" id="student-major"></div>
+                  <div class="statistics-info" id="student-statistics"></div>
+                </div>
+                <div class="vertical-divider"></div>
+              </div>
+            </div>
+
+            <div class="main-column">
+              <div class="main-content-wrapper">
+                <div class="fullname-title">
+                  <div class="name-address">
+                    <h1 id="name">Bilol Abdilxayev</h1>
+                    <h3 id="location">Tashkent, UZB</h3>
+                  </div>
+                  <h2 class="profile-type" id="role">Investor</h2>
+                </div>
+                <div class="description-column">
+                  <div class="student-description" id="bio">
+                    Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+                    Phasellus imperdiet, nulla et dictum interdum, nisi lorem
+                    egestas odio, vitae scelerisque enim ligula venenatis dolor.
+                    Maecenas nisl est, ultrices nec congue eget, auctor vitae
+                    massa.
+                  </div>
+                </div>
+                <div class="achievements-section">
+                  <div class="upper-container">
+                    <div class="achievements-title">Work History</div>
+                    <button class="download-button">Download</button>
+                  </div>
+                  <div
+                    class="achievements-list"
+                    id="work-history-container"
+                  ></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script src="assets/js/investor-profile.js"></script>
+  </body>
+</html>

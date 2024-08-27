@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>InsightHub - Register</title>
+    <link rel="stylesheet" href="./assets/css/styles.css">
+    <script src="assets/js/languages.js"></script> 
+</head>
+<body>
+    <header>
+        <div class="hcontainer">
+            <a class="h1-style" href="/"><h1>InsightHub</h1></a>
+        </div>
+    </header>
+
+    <div class="login-container">
+        <div class="login-card">
+            <h2 class = "create"data-translate="create">Create your <br> InsightHub Account</h2>
+            <p data-translate="type_account">Which type of account do you<br>want to create?</p>
+            <button onclick="location.href='/register-student'" data-translate="student">Student</button>
+            <button onclick="location.href='/register-investor'" data-translate="investor">Investor</button>
+            <div class="dotted-line"></div>
+            <p  data-translate="yes_account">Do you have an account?</p>
+            <a href="/login" class="create-account" data-translate="sign_in">Sign In</a>
+        </div>
+    </div>
+</body>
+</html>

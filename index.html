@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>InsightHub</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Poppins:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
+    <!-- при вставке этого js, исчезает логотип InsightHub -->
+    <script src="assets/js/languages.js"></script>
+    <link rel="stylesheet" href="assets/css/styles.css" />
+  </head>
+  <body>
+    <header id="header_1">
+      <div class="hcontainer">
+        <div class="logo-container">
+          <a class="h1-style" href="/">
+            <h1 data-translate="insight">InsightHub</h1>
+          </a>
+        </div>
+        <div class="nav-container">
+          <nav>
+            <ul>
+              <li>
+                <a href="#mission" class="lng-about" data-translate="about"
+                  >About</a
+                >
+              </li>
+              <li>
+                <a href="#team" class="lng-team" data-translate="founders"
+                  >Founders</a
+                >
+              </li>
+              <li>
+                <a href="#contact" class="lng-contact" data-translate="contact"
+                  >Contact</a
+                >
+              </li>
+              <select id="language-select" class="change-lang">
+                <option value="en">En</option>
+                <option value="uz">UZ</option>
+                <option value="ru">RU</option>
+              </select>
+              <li>
+                <a href="/login" class="btn-signin" data-translate="sign_in"
+                  >Sign In</a
+                >
+              </li>
+            </ul>
+          </nav>
+        </div>
+      </div>
+    </header>
+
+    <section id="hero" class="hero">
+      <div class="container">
+        <div class="hero-content">
+          <div class="hero-text">
+            <h2 class="lng-desc1" data-translate="desc1">
+              Help Students Achieve Their Dreams With Investor Support!
+            </h2>
+            <p class="lng-desc2" data-translate="desc2">
+              Unlocking the future of education by connecting students with the
+              resources they need to succeed.
+            </p>
+            <div class="hero-buttons">
+              <a href="#mission" class="btn-discover" data-translate="discover"
+                >Discover</a
+              >
+              <a href="/login" class="btn-get-started" data-translate="start"
+                >Get Started</a
+              >
+            </div>
+          </div>
+          <div class="hero-image">
+            <img
+              src="assets/icons/students_celebrating.png"
+              alt="Students celebrating"
+            />
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="mission" class="mission">
+      <div class="container">
+        <h2 class="mission111" data-translate="mission">Our Mission</h2>
+        <div class="mission-content">
+          <img src="assets/icons/knowledge_money.png" alt="Books and money" />
+
+          <p class="description_mission" data-translate="desc_mission">
+            InsightHub is a unique online platform designed to connect students
+            seeking to study abroad with investors willing to support them
+            financially. The main goal of InsightHub is to provide students with
+            the necessary resources to cover tuition, living, and other related
+            expenses, and investors with the opportunity to invest in the
+            education of talented youth.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section id="team" class="team">
+      <div class="container">
+        <h2 class="our_team" data-translate="team">Our Team</h2>
+        <div class="team-members">
+          <div class="team-member">
+            <div
+              class="image"
+              style="
+                background-image: url('assets/icons/photo_2024-05-02_19-37-06.jpg');
+              "
+            ></div>
+            <h3>Jurabaev Kamronbek</h3>
+            <p data-translate="descP1">CEO/Full Stack Developer</p>
+          </div>
+          <div class="team-member">
+            <div
+              class="image"
+              style="background-image: url('assets/icons/nodirbek.png')"
+            ></div>
+            <h3>Nodirbek Zayniddinov</h3>
+            <p data-translate="descP1">CEO/Full Stack Developer</p>
+          </div>
+          <div class="team-member">
+            <div
+              class="image"
+              style="background-image: url('assets/icons/bilol.png')"
+            ></div>
+            <h3>Bilol <br />Abdilkhayev</h3>
+            <p data-translate="descP2">Back End Developer</p>
+          </div>
+          <div class="team-member">
+            <div
+              class="image"
+              style="background-image: url('assets/icons/ikrom.png')"
+            ></div>
+            <h3>
+              Razumov <br />
+              Ikrom
+            </h3>
+            <p data-translate="descP3">Head of Marketing</p>
+          </div>
+        </div>
+      </div>
+
+      <div id="footer"></div>
+    </section>
+
+    <footer class="footer_color">
+      <div id="contact" class="contact-container">
+        <h2 class="contact-heading" data-translate="contact">Contact</h2>
+        <div class="contact-line"></div>
+        <div class="contact-columns">
+          <div class="contact-column">
+            <h3 class="social_media" data-translate="media">Social Media</h3>
+            <a href="#header_1">
+              <img class="btn_up" src="assets/icons/111.png" alt="Картинка" />
+            </a>
+            <div class="social-links">
+              <a href="#"
+                ><img src="assets/icons/instagram.png" alt="Instagram"
+              /></a>
+              <a href="#"
+                ><img src="assets/icons/twitter.png" alt="Twitter"
+              /></a>
+              <a href="#"
+                ><img src="assets/icons/linkedin.png" alt="LinkedIn"
+              /></a>
+            </div>
+          </div>
+          <div class="contact-column">
+            <h3 class="number" data-translate="number">Phone Number:</h3>
+            <p>+123-456-789<br />Support 10:00 - 18:00</p>
+            <p>+123-456-789<br />Support 10:00 - 18:00</p>
+            <p>+123-456-789<br />Support 10:00 - 18:00</p>
+          </div>
+          <div class="contact-column">
+            <h3 class="email" data-translate="email">Email:</h3>
+            <p>example@gmail.com</p>
+            <p>example@gmail.com</p>
+            <p>example@gmail.com</p>
+          </div>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>InsightHub - Login</title>
+    <link rel="stylesheet" href="./assets/css/styles.css" />
+    <script src="assets/js/languages.js"></script> 
+  </head>
+  <body>
+    <header>
+      <div class="hcontainer">
+        <a class="h1-style" href="/"><h1>InsightHub</h1></a>
+      </div>
+    </header>
+
+    <div class="sign-in-container">
+      <img
+        src="assets/icons/InsightHub-Logo.png"
+        alt="InsightHub Logo"
+        class="logo"
+      />
+      <h2 data-translate="sign_in">Sign In</h2>
+      <form id="loginForm">
+        <div>
+          <label for="email-address" data-translate="email_add">Email Address</label>
+          <input
+            type="email"
+            id="email-address"
+            name="email-address"
+            placeholder="youremail@example.com"
+            required
+          />
+          <span class="error-message">This field is required.</span>
+
+          <label for="password" data-translate="password">Password</label>
+          <input type="password" id="password" name="password" required />
+          <span class="error-message">This field is required.</span>
+
+          <!-- Show Password Checkbox -->
+          <div class="show-password-container">
+            <input type="checkbox" id="show-password" name="show-password" />
+            <label for="show-password" data-translate="password_show">Show password</label>
+          </div>
+
+          <div>
+            <input type="checkbox" id="remember" name="remember" />
+            <label for="remember" data-translate="email_rem">Remember my email address</label>
+          </div>
+
+          <button type="submit" data-translate="sign_in">Sign In</button>
+        </div>
+      </form>
+      <div class="help-links">
+        <a href="#"data-translate="help">Need help signing in?</a>
+        <div class="student-dotted-line"></div>
+        <p data-translate="no_account"><br />Don't have an account?</p>
+        <p>
+          <a href="/register" data-translate="account"><br />Create Account</a>
+        </p>
+      </div>
+    </div>
+    <script src="assets/js/login-investor.js"></script>
+  </body>
+</html>

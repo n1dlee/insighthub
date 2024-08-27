@@ -1,0 +1,240 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+.lang {
+  width: 100%;
+  padding-left: 15%;
+  padding-right: 15%;
+  padding-top: 50px;
+}
+
+.lang ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.lang ul li {
+  margin: 0 15px; /* Отступы между пунктами меню */
+}
+
+.lang ul li a {
+  text-decoration: none;
+  font-size: 36px;
+}
+/* Basic Styling */
+body {
+  font-family: "Poppins", sans-serif;
+  background-image: url("../icons/background.png");
+  background-size: cover;
+  background-position: center 210px; /* Изменено */
+  line-height: 1.6;
+  color: #12181e;
+  margin: 0;
+  padding: 0;
+  justify-content: center;
+  align-items: flex; /* Выравниваем по верхнему краю */
+}
+
+.hcontainer {
+  width: 100%;
+  max-width: 1400px; /* Увеличиваем максимальную ширину контейнера */
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.h1-style {
+  text-decoration: none;
+}
+
+.container {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 20px;
+  position: relative;
+  right: 5%;
+}
+
+/* Стили хедера */
+header {
+  background-color: #cef9ca;
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center;
+  display: flex;
+  justify-content: space-between; /* Располагаем элементы по краям */
+  align-items: center; /* Выравниваем по центру */
+  padding: 20px 40px; /* Увеличиваем отступы по бокам */
+}
+
+header h1 {
+  font-family: "Playfair Display", serif;
+  font-size: 80px;
+  font-weight: bold;
+  color: #000f24; /* Новый цвет текста */
+  margin: 0;
+}
+
+header nav ul li a {
+  color: #000f24; /* Новый цвет текста */
+  font-weight: 800;
+  font-size: 20px;
+  text-transform: uppercase;
+  text-decoration: none;
+}
+
+h1,
+h2 {
+  margin-top: 20px;
+}
+
+/* Specific Styling (optional) */
+h1 {
+  color: #000f24; /* InsightHub blue */
+}
+
+/* А тут код для footer.html */
+.footer_color {
+  background-color: #cef9ca;
+}
+
+footer {
+  background-color: #cef9ca;
+  padding: 10px 0; /* Отступы сверху и снизу */
+  text-align: left;
+  color: black;
+}
+
+.contact-info {
+  display: flex;
+  justify-content: space-between; /* Равномерно распределяем колонки */
+  flex-direction: column; /* Располагаем колонки вертикально */
+}
+
+.contact-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 10px;
+}
+
+.contact-heading {
+  font-size: 42px;
+  font-family: "Playfair Display", serif;
+  font-weight: bold;
+}
+
+.contact-line {
+  width: 48px;
+  height: 3px;
+  background-color: #28ac22; /* Зеленый цвет линии */
+}
+
+.contact-columns {
+  display: flex;
+  justify-content: space-between;
+}
+
+.contact-column {
+  flex: 1;
+  margin-right: 20px;
+}
+
+.contact-column:last-child {
+  margin-right: 0;
+}
+
+.contact-column h3 {
+  margin-bottom: 10px;
+  font-size: 32px;
+}
+
+.social-links {
+  display: flex;
+  align-items: left; /* Выравниваем иконки по центру вертикали */
+  flex-direction: column;
+}
+
+.social-links a {
+  margin-right: 10px;
+}
+
+.social-links img {
+  width: 24px;
+  height: 24px;
+}
+
+.btn_up {
+  position: absolute;
+  background-position-x: 200px;
+  width: 80px;
+  height: 80px;
+  right: 10%;
+}
+
+/* Header Wrapper Styles */
+.header-wrapper {
+  display: flex;
+  justify-content: space-between;
+  align-items: center; /* Align items to the center vertically */
+  width: 95%;
+  max-width: 1300px;
+  margin-bottom: 20px;
+}
+
+.nav-container {
+  margin-right: -100px; /* Отрицательный отступ для навигации */
+}
+
+.nav-container ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  align-items: center;
+}
+
+.nav-container ul li {
+  margin: 0 15px; /* Отступы между пунктами меню */
+}
+
+.nav-container ul li a {
+  text-decoration: none;
+  font-size: 36px;
+}
+
+/* Стили кнопки Sign In */
+header .btn-signin {
+  margin: 5px;
+  background-color: #28ac22;
+  color: white;
+  padding: 10px 50px;
+  border: none;
+  border-radius: 35px;
+  font-weight: extra-bold;
+  text-transform: uppercase;
+  font-size: 28px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+header .btn-signin:hover {
+  background-color: #218c1b;
+}
+
+.btn-signin {
+  margin: 0; /* Убираем отступы у кнопки */
+  font-size: 20px; /* Увеличиваем размер шрифта */
+  padding: 12px 30px; /* Увеличиваем отступы внутри кнопки */
+}
