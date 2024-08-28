@@ -8,94 +8,95 @@ document.addEventListener("DOMContentLoaded", async () => {
   console.log("Profile Edit page loaded. User ID from URL:", userId);
 
   if (!userId) {
-      console.error("User ID not found in URL. Redirecting...");
-      window.location.href = "/login-student";
-      return;
+    console.error("User ID not found in URL. Redirecting...");
+    window.location.href = "/login-student";
+    return;
   }
 
   try {
-      // Fetch initial user data (logged-in user)
-      const currentUserData = await loadProfileData();
-      console.log("Current user data (from /api/auth):", currentUserData);
+    // Fetch initial user data (logged-in user)
+    const currentUserData = await loadProfileData();
+    console.log("Current user data (from /api/auth):", currentUserData);
 
-      if (!currentUserData || !currentUserData.id) {
-          throw new Error("Invalid user data received from server");
-      }
+    if (!currentUserData || !currentUserData.id) {
+      throw new Error("Invalid user data received from server");
+    }
 
-      // Populate read-only fields for the logged-in user
-      const readOnlyFields = ["name", "surname", "education"];
-      populateFormFields(profileEditForm, currentUserData, readOnlyFields);
+    // Populate read-only fields for the logged-in user
+    const readOnlyFields = ["name", "surname", "education"];
+    populateFormFields(profileEditForm, currentUserData, readOnlyFields);
 
-      // Load majors and populate dropdown
-      loadMajors();
+    // Load majors and populate dropdown
+    loadMajors();
 
-      // Fetch additional profile data if editing another user's profile
-      if (userId !== currentUserData.id) {
-          const profileData = await loadProfileData(userId);
-          console.log("Fetched profile data for editing:", profileData);
+    // Fetch additional profile data if editing another user's profile
+    if (userId !== currentUserData.id) {
+      const profileData = await loadProfileData(userId);
+      console.log("Fetched profile data for editing:", profileData);
 
-          // Populate editable fields for the user being edited
-          const editableFields = [
-              "location",
-              "major",
-              "gpa",
-              "sat",
-              "ielts",
-              "achievements",
-          ];
-          populateFormFields(profileEditForm, profileData, editableFields);
-      }
+      // Populate editable fields for the user being edited
+      const editableFields = [
+        "location",
+        "major",
+        "gpa",
+        "sat",
+        "ielts",
+        "achievements",
+        "bio",
+      ];
+      populateFormFields(profileEditForm, profileData, editableFields);
+    }
 
-      // Set the initial profile image (if available)
-      const profileImageInput = document.getElementById("profileImage");
-      if (currentUserData.profileImage) {
-          const img = document.createElement('img');
-          img.src = currentUserData.profileImage;
-          img.alt = 'Current Profile Image';
-          profileImageInput.parentNode.insertBefore(img, profileImageInput); // Add image before the input
-      }
+    // Set the initial profile image (if available)
+    const profileImageInput = document.getElementById("profileImage");
+    if (currentUserData.profileImage) {
+      const img = document.createElement("img");
+      img.src = currentUserData.profileImage;
+      img.alt = "Current Profile Image";
+      profileImageInput.parentNode.insertBefore(img, profileImageInput); // Add image before the input
+    }
   } catch (error) {
-      handleError("Error loading profile data:", error);
+    handleError("Error loading profile data:", error);
   }
 
   // Handle form submission
   profileEditForm.addEventListener("submit", async (event) => {
-      event.preventDefault();
+    event.preventDefault();
 
-      const formData = new FormData(profileEditForm);
+    const formData = new FormData(profileEditForm);
 
-      // Convert empty strings to null for integer fields (if needed)
-      const gpa = profileEditForm.querySelector("#gpa").value.trim();
-      formData.set("gpa", gpa === "" ? null : gpa);
-
-      const sat = profileEditForm.querySelector("#sat").value.trim();
-      formData.set("sat", sat === "" ? null : sat);
-
-      const ielts = profileEditForm.querySelector("#ielts").value.trim();
-      formData.set("ielts", ielts === "" ? null : ielts);
-
-      formData.append("id", userId); // Include the user ID
-
-      try {
-          const response = await fetch(`/api/user/${userId}`, {
-              method: "PUT",
-              body: formData,
-          });
-
-          if (response.ok) {
-              alert("Profile updated successfully");
-              window.location.href = `profile?id=${userId}`;
-          } else {
-              const errorText = await response.text();
-              console.error("Failed to update profile:", errorText);
-              alert("Failed to update profile. Please try again.");
-          }
-      } catch (error) {
-          console.error("Error updating profile:", error);
-          alert("An error occurred while updating the profile.");
+    // Only send updated fields to the server
+    const updatedFields = {};
+    for (const [key, value] of formData.entries()) {
+      if (key !== "id" && value !== "") {
+        updatedFields[key] = value;
       }
-  });
+    }
 
+    formData.append("id", userId); // Include the user ID
+
+    try {
+      const response = await fetch(`/api/user/${userId}`, {
+        method: "PUT",
+        body: JSON.stringify(updatedFields),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (response.ok) {
+        alert("Profile updated successfully");
+        window.location.href = `profile?id=${userId}`;
+      } else {
+        const errorText = await response.text();
+        console.error("Failed to update profile:", errorText);
+        alert("Failed to update profile. Please try again.");
+      }
+    } catch (error) {
+      console.error("Error updating profile:", error);
+      alert("An error occurred while updating the profile.");
+    }
+  });
 
   async function loadProfileData(userId) {
     try {

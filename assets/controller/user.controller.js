@@ -184,52 +184,50 @@ class UserController {
 
   async updateUser(req, res, next) {
     try {
-        const { id } = req.params;
-        const { profile_image, location, major, gpa, sat, ielts, achievements, bio } = req.body;
+      const { id } = req.params;
+      const {
+        profile_image,
+        location,
+        major,
+        gpa,
+        sat,
+        ielts,
+        achievements,
+        bio,
+      } = req.body;
 
-        console.log("Request body:", req.body); // Log the request body
-        console.log("Request params:", req.params); // Log the request params
+      // Validate user ID
+      if (!id || isNaN(id)) {
+        return next(ApiError.badRequest("Invalid user ID"));
+      }
 
-        // Validate the ID
-        if (!id || isNaN(id)) {
-            return next(ApiError.badRequest("Invalid user ID"));
-        }
+      // Fetch user from database
+      const user = await Student.findByPk(id);
+      if (!user) {
+        return next(ApiError.notFound("User not found"));
+      }
 
-        // Fetch the user from the database
-        const user = await Student.findByPk(id);
-        if (!user) {
-            return next(ApiError.notFound("User not found"));
-        }
+      // Update user data only if the field has been changed
+      if (profile_image) user.profile_image = profile_image;
+      if (location) user.location = location;
+      if (major) user.major = major;
+      if (gpa) user.gpa = gpa;
+      if (sat) user.sat = sat;
+      if (ielts) user.ielts = ielts;
+      if (achievements) user.achievements = achievements;
+      if (bio) user.bio = bio;
 
-        // Prepare the fields to be updated
-        const updateData = {};
-        if (profile_image !== undefined) updateData.profile_image = profile_image;
-        if (location !== undefined) updateData.location = location;
-        if (major !== undefined) updateData.major = major;
-        if (gpa !== undefined) updateData.gpa = gpa;
-        if (sat !== undefined) updateData.sat = sat;
-        if (bio !== undefined) updateData.bio = bio;
-        if (ielts !== undefined) updateData.ielts = ielts;
-        if (achievements !== undefined) updateData.achievements = achievements;
+      // Save changes to database
+      await user.save();
 
-        // Log the prepared update data
-        console.log("Updating user with data:", updateData);
-
-        // Update the user with the new data
-        await user.update(updateData);
-
-        // Log confirmation
-        console.log(`User with ID ${id} updated successfully`);
-
-        // Send the updated user data as the response
-        res.json(user);
+      // Return success response
+      res.json(user);
     } catch (error) {
-        console.error("Error updating user:", error);
-        next(ApiError.internal("Error updating user"));
+      // Handle errors
+      console.error("Error updating user:", error);
+      next(ApiError.internal("Error updating user", error));
     }
-}
-
-  
+  }
 
   async deleteUser(req, res, next) {
     try {

@@ -13,7 +13,11 @@
         <nav class="icon-bar">
           <div class="user-profile-wrapper" aria-haspopup="true">
             <div class="user-profile">
-              <img src="assets/icons/default-image.png" alt="User Profile" />
+              <img
+                id="profile-image"
+                src="assets/icons/default-image.png"
+                alt="User Profile"
+              />
             </div>
             <ul class="dropdown-menu" role="menu" aria-hidden="true">
               <li role="menuitem">
@@ -43,17 +47,33 @@
             <div class="profile-sidebar">
               <div class="sidebar-content">
                 <div class="profile-details">
-                  <div class="profile-image-container">
-                    <img
-                      class="profile-image"
-                      src="assets/icons/default-pic.png"
-                      alt="Profile Image"
-                    />
+                  <div class="education-info">
+                    <p>
+                      <strong>Education:</strong>
+                      <span id="student-education">Loading...</span>
+                    </p>
                   </div>
-                  <div class="education-info" id="student-education"></div>
                   <div class="divider"></div>
-                  <div class="major-info" id="student-major"></div>
-                  <div class="statistics-info" id="student-statistics"></div>
+                  <div class="major-info">
+                    <p>
+                      <strong>Major:</strong>
+                      <span id="student-major">Loading...</span>
+                    </p>
+                  </div>
+                  <div class="statistics-info">
+                    <p>
+                      <strong>GPA:</strong>
+                      <span id="student-gpa">Loading...</span>
+                    </p>
+                    <p>
+                      <strong>SAT:</strong>
+                      <span id="student-sat">Loading...</span>
+                    </p>
+                    <p>
+                      <strong>IELTS:</strong>
+                      <span id="student-ielts">Loading...</span>
+                    </p>
+                  </div>
                 </div>
                 <div class="vertical-divider"></div>
               </div>
@@ -63,22 +83,26 @@
               <div class="main-content-wrapper">
                 <div class="fullname-title">
                   <div class="name-address">
-                    <h1 id="student-name">Bilol Abdilxayev
-                      <a href="/profile-change"> 
-                        <img src="assets/icons/change-profile.png" alt="Change Profile" class="change-profile-icon">
-                    </a>
+                    <h1 id="student-name">
+                      Loading...
+                      <a
+                        href="/profile-change"
+                        id="change-profile-link"
+                        style="display: none"
+                      >
+                        <img
+                          src="assets/icons/change-profile.png"
+                          alt="Change Profile"
+                          class="change-profile-icon"
+                        />
+                      </a>
                     </h1>
-                    <h3 id="student-location">Tashkent, UZB</h3>
+                    <h3 id="student-location">Loading...</h3>
                   </div>
-                  <h2 class="profile-type" id="student-role">Student</h2>
                 </div>
                 <div class="description-column">
                   <div class="student-description" id="student-bio">
-                    Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-                    Phasellus imperdiet, nulla et dictum interdum, nisi lorem
-                    egestas odio, vitae scelerisque enim ligula venenatis dolor.
-                    Maecenas nisl est, ultrices nec congue eget, auctor vitae
-                    massa.
+                    Loading...
                   </div>
                 </div>
                 <div class="achievements-section">
