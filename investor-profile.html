@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Student Profile Page</title>
+    <title>Investor Profile Page</title>
     <link rel="stylesheet" href="assets/css/styles.css" />
   </head>
   <body>
@@ -18,7 +18,9 @@
             <ul class="dropdown-menu" role="menu" aria-hidden="true">
               <li role="menuitem"><span class="user-name">User</span></li>
               <li role="menuitem">
-                <a href="/investor-profile"><i class="profile-icon"></i> View Profile</a>
+                <a href="/investor-profile"
+                  ><i class="profile-icon"></i> View Profile</a
+                >
               </li>
               <li role="menuitem">
                 <a href="/logout"><i class="logout-icon"></i> Log Out</a>
@@ -29,7 +31,7 @@
       </div>
     </header>
 
-    <div class="profile-page-student">
+    <div class="profile-page-investor">
       <div class="profile-content">
         <img
           class="background-image"
@@ -48,17 +50,14 @@
                       alt="Profile Image"
                     />
                   </div>
-                  <div class="education-info" id="student-education">
-                    Education: N/A
-                  </div>
                   <div class="divider"></div>
-                  <div class="major-info" id="student-major"></div>
-                  <div class="statistics-info" id="student-statistics"></div>
+                  <div class="work-history-info" id="work-history"></div>
+                  <div class="work-experience-info" id="work-experience"></div>
                 </div>
                 <div class="vertical-divider"></div>
               </div>
             </div>
-
+            <div id="error-message" style="display: none"></div>
             <div class="main-column">
               <div class="main-content-wrapper">
                 <div class="fullname-title">
@@ -69,7 +68,7 @@
                   <h2 class="profile-type" id="role">Investor</h2>
                 </div>
                 <div class="description-column">
-                  <div class="student-description" id="bio">
+                  <div class="investor-description" id="bio">
                     Lorem ipsum dolor sit amet, consectetur adipiscing elit.
                     Phasellus imperdiet, nulla et dictum interdum, nisi lorem
                     egestas odio, vitae scelerisque enim ligula venenatis dolor.
@@ -87,12 +86,23 @@
                     id="work-history-container"
                   ></div>
                 </div>
+                <div class="achievements-section">
+                  <div class="upper-container">
+                    <div class="achievements-title">Work Experience</div>
+                    <button class="download-button">Download</button>
+                  </div>
+                  <div
+                    class="achievements-list"
+                    id="work-experience-container"
+                  ></div>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
     </div>
+    <div id="loading-indicator" style="display: none">Loading...</div>
     <script src="assets/js/investor-profile.js"></script>
   </body>
 </html>

@@ -1,8 +1,17 @@
-document.addEventListener("DOMContentLoaded", () => {
-  loadUsers();
-  loadUniversities();
-  loadMajors();
+const universitySelect = document.getElementById("university");
+const majorSelect = document.getElementById("major");
+const investmentSelect = document.getElementById("investment");
 
+document.addEventListener("DOMContentLoaded", async () => {
+  try {
+    allMajors = await loadMajors();
+    populateDropdown("major", allMajors);
+    loadUsers();
+    loadUniversities();
+    loadMajors();
+  } catch (error) {
+    showError(error.message);
+  }
   // Check if on the profile page and handle authentication
   if (window.location.pathname === "/investor-profile") {
     handleProfilePage();
@@ -19,11 +28,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Event listeners for filters (if applicable on this page)
-  const universitySelect = document.getElementById("university");
-  const majorSelect = document.getElementById("major");
-  const investmentSelect = document.getElementById("investment");
-
   if (universitySelect && majorSelect && investmentSelect) {
     universitySelect.addEventListener("change", applyFilters);
     majorSelect.addEventListener("change", applyFilters);
@@ -32,6 +36,7 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 let allUsers = [];
+let allMajors = [];
 
 function loadUsers() {
   showLoadingIndicator();
@@ -46,11 +51,15 @@ function loadUsers() {
     .catch(handleError("Error loading user data"));
 }
 
-function createUserItem(user) {
+function createUserItem(user, majorsData) {
   const userItem = document.createElement("div");
   userItem.classList.add("student-item");
 
   const investment = user.investment ? `$${user.investment}/year` : "N/A";
+
+  // Find the major name using the major ID from the user data
+  const major = majorsData.find((major) => major.id === parseInt(user.major));
+  const majorName = major ? major.name : "Major not provided";
 
   userItem.innerHTML = `
     <div class="user-avatar"></div> 
@@ -58,38 +67,45 @@ function createUserItem(user) {
       <a href="profile?id=${user.id}">
         <h3>${user.name || "N/A"} ${user.surname || "N/A"}</h3>
       </a> 
-      <p>${user.educationPlace || "N/A"}, ${
-    user.primaryDegree || "N/A"
-  }, ${investment}</p>
+      <p>${user.educationPlace || "N/A"}, ${majorName}, ${investment}</p>
     </div>
   `;
 
   return userItem;
 }
 
+function getMajorName(majorId, majorsData) {
+  const major = majorsData.find((major) => major.id === majorId);
+  return major ? major.name : "Major not provided";
+}
+
 async function handleProfilePage() {
   try {
     const userData = await loadCurrentUserData();
     updateIconBar(userData);
+    navBar(userData); // Corrected here
 
     const urlParams = new URLSearchParams(window.location.search);
     const userId = urlParams.get("id");
 
-    if (!userId) {
-      window.location.replace("/login-investor");
-      return;
-    }
+    // Prioritize user ID from URL, fallback to authenticated user if none provided
+    const profileIdToLoad = userId || userData.id;
 
-    loadProfile(userId, userData);
+    loadProfile(profileIdToLoad, userData);
   } catch (error) {
-    handleError("Error checking authentication or loading profile:", error);
-    window.location.replace("/login-investor");
+    if (error.message === "Unauthorized. Please log in.") {
+      // Handle unauthorized access specifically (e.g., redirect to login)
+      window.location.replace("/login-investor");
+    } else {
+      // Handle other errors gracefully
+      handleError("Error checking authentication or loading profile:", error);
+    }
   }
 }
 
 async function loadCurrentUserData() {
   try {
-    const response = await fetch("/api/auth", {
+    const response = await fetch("/api/auth-investor", {
       credentials: "include",
     });
 
@@ -108,7 +124,20 @@ async function loadCurrentUserData() {
       throw new Error("No user data or ID found.");
     }
 
-    return userData;
+    // Теперь загружаем дополнительные данные пользователя по ID
+    const userResponse = await fetch(`/api/user/${userData.id}`);
+    if (!userResponse.ok) {
+      throw new Error(
+        "Failed to fetch additional user data. Status: " + userResponse.status
+      );
+    }
+
+    const additionalUserData = await userResponse.json();
+
+    // Объединяем данные из двух запросов
+    const completeUserData = { ...userData, ...additionalUserData };
+
+    return completeUserData;
   } catch (error) {
     handleError("Error checking authentication:", error);
     window.location.replace("/login-investor");
@@ -177,35 +206,58 @@ function logout() {
     .catch(handleError("Error during logout:"));
 }
 
-function updateIconBar(userData) {
-  const userProfile = document.querySelector(".user-profile");
-  const dropdownMenu = document.querySelector(".dropdown-menu");
+async function updateIconBar() {
+  const userNameSpan = document.getElementById("navbar-user-name");
+  try {
+    // Display a loading message while fetching data
+    userNameSpan.textContent = "Loading user...";
 
-  let profileImage = userProfile.querySelector("img");
-  if (!profileImage) {
-    profileImage = new Image();
-    profileImage.alt = "User Profile";
-    userProfile.appendChild(profileImage);
-  }
-  profileImage.src = userData.profileImage || "assets/icons/default-avatar.png";
+    const userData = await loadCurrentUserData(); // Corrected call
 
-  fetch(`/api/user/${userData.id}`)
-    .then(handleFetchResponse)
-    .then((user) => {
-      let userNameSpan = dropdownMenu.querySelector(".user-name");
-      if (!userNameSpan) {
-        userNameSpan = document.createElement("span");
-        userNameSpan.classList.add("user-name");
-        dropdownMenu.querySelector("li:first-child").appendChild(userNameSpan);
+    const userProfile = document.querySelector(".user-profile");
+
+    // Set profile image (with error handling)
+    let profileImage = userProfile.querySelector("img");
+    if (!profileImage) {
+      profileImage = new Image();
+      profileImage.alt = "User Profile";
+      userProfile.appendChild(profileImage);
+    }
+
+    profileImage.src =
+      userData.profileImage || "assets/icons/default-avatar.png";
+    profileImage.onerror = () => {
+      profileImage.src = "assets/icons/default-avatar.png"; // Fallback if image fails to load
+      console.error("Failed to load profile image. Using default.");
+    };
+
+    // Update user name using template literals
+    userNameSpan.textContent = `${userData.name || "N/A"} ${
+      userData.surname || "N/A"
+    }`;
+
+    // Update profile link
+    if (userData && userData.id) {
+      const profileLink = document.querySelector('a[href="/investor-profile"]');
+      if (profileLink) {
+        profileLink.href = `/investor-profile?id=${userData.id}`;
       }
-      const fullName = `${user.name} ${user.surname}`;
-      userNameSpan.textContent = fullName.trim() || "User";
-    })
-    .catch(handleError("Error fetching user details:"));
+    }
+  } catch (error) {
+    console.error("Error fetching user details:", error);
+    userNameSpan.textContent = "Error loading user data";
+  }
+}
 
-  const profileLink = dropdownMenu.querySelector('a[href="/investor-profile"]');
-  if (profileLink) {
-    profileLink.href = `/investor-profile?id=${userData.id}`;
+async function navBar(profileData, currentUserId) {
+  try {
+    document.getElementById("loading-investor-name").textContent = `${
+      profileData.name || "N/A"
+    } ${profileData.surname || "N/A"}`;
+  } catch (error) {
+    hideLoadingIndicator();
+    showError("An error occurred while loading the profile.");
+    console.error("Error loading profile data:", error);
   }
 }
 
@@ -222,13 +274,20 @@ function loadUniversities() {
     .catch(handleError("Error fetching universities"));
 }
 
-function loadMajors() {
-  fetch("/api/majors")
-    .then(handleFetchResponse)
-    .then((majors) => {
-      populateDropdown("major", majors);
-    })
-    .catch(handleError("Error fetching majors"));
+async function loadMajors() {
+  try {
+    const response = await fetch("/api/majors");
+    if (!response.ok) {
+      throw new Error(
+        "Failed to fetch majors data. Status: " + response.status
+      );
+    }
+    const majors = await response.json();
+    allMajors = majors;
+    return majors;
+  } catch (error) {
+    handleError("Error fetching majors:")(error);
+  }
 }
 
 function populateDropdown(dropdownId, data) {
@@ -243,27 +302,41 @@ function populateDropdown(dropdownId, data) {
 
 function applyFilters() {
   const selectedUniversity = universitySelect.value;
-  const selectedMajor = majorSelect.value;
+  const selectedMajorName = majorSelect.value.trim().toLowerCase();
   const selectedInvestment = investmentSelect.value;
 
   const isUniversityFilterApplied = selectedUniversity !== "University";
-  const isMajorFilterApplied = selectedMajor !== "Major";
+  const isMajorFilterApplied = selectedMajorName !== "major";
 
   let filteredUsers = allUsers;
 
+  console.log("All Users:", allUsers);
+
+  // Фильтрация по университету и специальности
   if (isUniversityFilterApplied || isMajorFilterApplied) {
-    filteredUsers = filteredUsers.filter(
-      (user) =>
+    filteredUsers = filteredUsers.filter((user) => {
+      const userMajorId = parseInt(user.major); // Получаем ID специальности пользователя
+
+      // Находим ID специальности, соответствующий выбранному названию специальности
+      const selectedMajor = allMajors.find(
+        (major) => major.name.trim().toLowerCase() === selectedMajorName
+      );
+
+      const selectedMajorId = selectedMajor ? selectedMajor.id : null;
+
+      return (
         (!isUniversityFilterApplied ||
           user.educationPlace === selectedUniversity) &&
-        (!isMajorFilterApplied || user.primaryDegree === selectedMajor)
-    );
+        (!isMajorFilterApplied || userMajorId === selectedMajorId)
+      );
+    });
   }
 
+  // Фильтрация по инвестициям
   if (selectedInvestment !== "Investment") {
     const [min, max] = selectedInvestment
       .split("-")
-      .map(val.map((val) => parseInt(val.replace("$", ""))));
+      .map((val) => parseInt(val.replace("$", "")));
     filteredUsers = filteredUsers.filter(
       (user) => user.investment >= min && user.investment <= max
     );
@@ -278,28 +351,32 @@ function applyFilters() {
   }
 }
 
-function updateStudentList(filteredUsers) {
+// Update the student list by applying filters and creating user items
+async function updateStudentList(filteredUsers) {
   const studentList = document.getElementById("student-list");
   studentList.innerHTML = "";
 
+  // Ensure that majors data is loaded before updating the student list
+  const majorsData = await loadMajors();
+
   filteredUsers.forEach((user) => {
-    const userItem = createUserItem(user);
+    const userItem = createUserItem(user, majorsData);
     studentList.appendChild(userItem);
   });
 }
 
 function showLoadingIndicator() {
   const loadingContainer = document.getElementById("loading-indicator");
-  if (loadingContainer) {
-    loadingContainer.style.display = "block";
-  }
+  const formElements = document.querySelectorAll("form input, form select");
+  formElements.forEach((el) => (el.disabled = true)); // Disable form elements
+  if (loadingContainer) loadingContainer.style.display = "block";
 }
 
 function hideLoadingIndicator() {
   const loadingContainer = document.getElementById("loading-indicator");
-  if (loadingContainer) {
-    loadingContainer.style.display = "none";
-  }
+  const formElements = document.querySelectorAll("form input, form select");
+  formElements.forEach((el) => (el.disabled = false)); // Enable form elements
+  if (loadingContainer) loadingContainer.style.display = "none";
 }
 
 function showError(message) {
@@ -325,8 +402,8 @@ function handleFetchResponse(response) {
 // Helper function to create error handlers
 function handleError(defaultMessage) {
   return (error) => {
-    hideLoadingIndicator();
     console.error(defaultMessage, error);
     showError(error.message || defaultMessage);
+    alert("An error occurred: " + (error.message || defaultMessage)); // Additional feedback
   };
 }

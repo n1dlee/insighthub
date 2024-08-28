@@ -2,11 +2,43 @@ const ApiError = require("../error/ApiError");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const Investor = require("../models/investor.model");
+const multer = require("multer");
+const path = require("path");
+const fs = require("fs");
 require("dotenv").config();
 
 const generateJwt = (id, email) => {
   return jwt.sign({ id, email }, process.env.JWT_TOKEN, { expiresIn: "24h" });
 };
+
+// Настройка хранилища для загрузки изображений профиля
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const token = req.cookies.authToken;
+    const decoded = jwt.verify(token, process.env.JWT_TOKEN);
+    const userId = decoded.id;
+    const uploadDir = `assets/uploads/investor/${userId}`;
+    fs.mkdirSync(uploadDir, { recursive: true });
+    cb(null, uploadDir);
+  },
+  filename: (req, file, cb) => {
+    cb(null, `image.png`);
+  },
+});
+
+const upload = multer({
+  storage: storage,
+  limits: {
+    fileSize: 3 * 1024 * 1024, // 3 MB limit
+  },
+  fileFilter: function (req, file, cb) {
+    const ext = path.extname(file.originalname).toLowerCase();
+    if (ext !== ".png" && ext !== ".jpg" && ext !== ".jpeg") {
+      return cb(new Error("Only images are allowed"), false);
+    }
+    cb(null, true);
+  },
+});
 
 class investorController {
   async createInvestor(req, res, next) {
@@ -47,7 +79,7 @@ class investorController {
         );
       }
 
-      const hashPassword = await bcrypt.hash(password, 5); // Use a reasonable number of salt rounds (e.g., 10-12)
+      const hashPassword = await bcrypt.hash(password, 5);
 
       const newInvestor = await Investor.create({
         name,
@@ -93,7 +125,7 @@ class investorController {
 
       res.cookie("authToken", token, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === "production", // Secure in production, not in development
+        secure: process.env.NODE_ENV === "production",
         sameSite: "Strict",
       });
 
@@ -120,18 +152,14 @@ class investorController {
 
   async check(req, res, next) {
     try {
-      const user = req.user; // Assuming your authMiddleware sets req.user
+      const user = req.user;
       if (!user || !user.id || !user.email) {
         return next(ApiError.internal("Error during check: Missing user data"));
       }
 
-      // If you need to fetch additional investor data, add a query here
-      // const additionalInvestorData = await Investor.findByPk(user.id);
-
       res.json({
         id: user.id,
         email: user.email,
-        // ... other investor data from additionalInvestorData (if fetched)
       });
     } catch (error) {
       next(ApiError.internal("Error during check"));
@@ -140,10 +168,10 @@ class investorController {
 
   async getInvestors(req, res) {
     try {
-      const users = await Investor.findAll();
-      res.json(users);
+      const investors = await Investor.findAll();
+      res.json(investors);
     } catch (error) {
-      next(ApiError.internal("Error fetching users"));
+      next(ApiError.internal("Error fetching investors"));
     }
   }
 
@@ -151,61 +179,142 @@ class investorController {
     try {
       const id = req.params.id;
       if (!id || isNaN(id)) {
-        return next(ApiError.badRequest("Invalid user ID"));
+        return next(ApiError.badRequest("Invalid investor ID"));
       }
-      const user = await Investor.findByPk(id);
+      const investor = await Investor.findByPk(id);
 
-      if (!user) {
-        return next(ApiError.notFound("User not found")); // Use a more specific 404 error
+      if (!investor) {
+        return next(ApiError.notFound("Investor not found"));
       }
-      res.json(user);
+      res.json(investor);
     } catch (error) {
-      console.error("Error fetching user:", error); // Log the error for debugging
-      next(ApiError.internal("чел ты долбаеб"));
+      console.error("Error fetching investor:", error);
+      next(ApiError.internal("Error fetching investor"));
     }
   }
 
   async updateInvestor(req, res, next) {
     try {
+      const { id } = req.params;
       const {
-        id,
-        name,
-        surname,
-        age,
-        middle,
-        email,
-        livesOutsideUS,
+        profile_image,
+        location,
         workPlace,
+        companyName,
         jobFunc,
+        bio,
+        workExperience,
+        workHistory,
       } = req.body;
 
-      const user = await Investor.findByPk(id);
-      if (user) {
-        await user.update({
-          name,
-          surname,
-          age,
-          middle,
-          email,
-          livesOutsideUS,
-          workPlace,
-          jobFunc,
-        });
-        res.json(user);
-      } else {
-        next(ApiError.badRequest("Investor not found"));
+      // Validate user ID
+      if (!id || isNaN(id)) {
+        return next(ApiError.badRequest("Invalid investor ID"));
       }
+
+      // Fetch investor from database
+      const investor = await Investor.findByPk(id);
+      if (!investor) {
+        return next(ApiError.notFound("Investor not found"));
+      }
+
+      // Update investor data only if the field has been changed
+      if (profile_image) investor.profile_image = profile_image;
+      if (location) investor.location = location;
+      if (workPlace) investor.workPlace = workPlace;
+      if (companyName) investor.companyName = companyName;
+      if (jobFunc) investor.jobFunc = jobFunc;
+      if (bio) investor.bio = bio;
+
+      // Update work experience and work history
+      if (workExperience) investor.workExperience = workExperience;
+      if (workHistory) investor.workHistory = workHistory;
+
+      // Save changes to database
+      await investor.save();
+
+      // Return success response
+      res.json(investor);
     } catch (error) {
-      next(ApiError.internal("Error updating Investor"));
+      // Handle errors
+      console.error("Error updating investor:", error);
+      next(ApiError.internal("Error updating investor", error));
     }
   }
 
-  async deleteInvestor(req, res) {
+  async uploadProfileImage(req, res, next) {
+    upload.single("profileImage")(req, res, async (err) => {
+      if (err) {
+        if (
+          err instanceof multer.MulterError &&
+          err.code === "LIMIT_FILE_SIZE"
+        ) {
+          return next(ApiError.badRequest("File size exceeds 3MB limit"));
+        } else {
+          return next(ApiError.badRequest(err.message));
+        }
+      }
+
+      try {
+        const profileImage = req.file;
+
+        if (!profileImage) {
+          return next(ApiError.badRequest("No image uploaded"));
+        }
+
+        const token = req.cookies.authToken;
+        const decodedToken = jwt.verify(token, process.env.JWT_TOKEN);
+        const userId = decodedToken.id;
+
+        const investor = await Investor.findByPk(userId);
+        if (!investor) {
+          return next(ApiError.notFound("Investor not found"));
+        }
+
+        investor.profile_image = profileImage.filename;
+        await investor.save();
+
+        res.json({
+          message: "Image uploaded successfully",
+          filename: profileImage.filename,
+        });
+      } catch (error) {
+        next(ApiError.internal("Error uploading image"));
+      }
+    });
+  }
+
+  async getUniversities(req, res, next) {
+    try {
+      const universities = await University.findAll();
+      res.json(universities);
+    } catch (error) {
+      console.error("Error fetching universities:", error);
+      next(ApiError.internal("Error fetching universities"));
+    }
+  }
+
+  async getMajors(req, res, next) {
+    try {
+      const majors = await Major.findAll();
+
+      if (majors.length === 0) {
+        return res.status(404).json({ message: "No majors found" });
+      }
+
+      res.json(majors);
+    } catch (error) {
+      console.error("Error fetching majors:", error);
+      next(ApiError.internal("An error occurred while fetching majors"));
+    }
+  }
+
+  async deleteInvestor(req, res, next) {
     try {
       const id = req.params.id;
-      const user = await Investor.findByPk(id);
-      if (user) {
-        await user.destroy();
+      const investor = await Investor.findByPk(id);
+      if (investor) {
+        await investor.destroy();
         res.json({ message: "Investor deleted successfully" });
       } else {
         next(ApiError.badRequest("Investor not found"));

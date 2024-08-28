@@ -105,7 +105,7 @@ async function handleProfilePage() {
 
 async function loadCurrentUserData() {
   try {
-    const response = await fetch("/api/auth", {
+    const response = await fetch("/api/auth-student", {
       credentials: "include",
     });
 

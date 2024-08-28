@@ -3,7 +3,6 @@ const userController = require("../controller/user.controller");
 const authMiddleware = require("../middleware/authMiddleware");
 
 const router = express.Router();
-// const router = express()
 
 // User routes
 router.post("/user", userController.createUser);

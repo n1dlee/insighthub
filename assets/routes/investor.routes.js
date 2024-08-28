@@ -7,8 +7,12 @@ const router = express.Router();
 // Investor routes
 router.post("/investor", investorController.createInvestor);
 router.post("/investor-login", investorController.login);
-router.post("/logout", investorController.logout); // Assuming shared logout logic
-router.get("/auth", authMiddleware, investorController.check);
+router.post("/logout", investorController.logout);
+router.post(
+  "/investor/:id/upload-profile-image",
+  investorController.uploadProfileImage
+);
+router.get("/auth-investor", authMiddleware, investorController.check);
 router.get("/investors", authMiddleware, investorController.getInvestors);
 router.get("/investor/:id", authMiddleware, investorController.getOneInvestor);
 router.put("/investor/:id", authMiddleware, investorController.updateInvestor);
@@ -17,5 +21,7 @@ router.delete(
   authMiddleware,
   investorController.deleteInvestor
 );
+router.get("/universities", investorController.getUniversities);
+router.get("/majors", investorController.getMajors);
 
 module.exports = router;
