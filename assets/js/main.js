@@ -31,6 +31,7 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 let allUsers = [];
+let allMajors = [];
 
 function loadUsers() {
   showLoadingIndicator();
@@ -50,6 +51,7 @@ function createUserItem(user) {
   userItem.classList.add("student-item");
 
   const investment = user.investment ? `$${user.investment}/year` : "N/A";
+  const majorName = getMajorName(user.major, allMajors); // Pass allMajors to getMajorName
 
   userItem.innerHTML = `
     <div class="user-avatar"></div> 
@@ -57,31 +59,35 @@ function createUserItem(user) {
       <a href="profile?id=${user.id}">
         <h3>${user.name || "N/A"} ${user.surname || "N/A"}</h3>
       </a> 
-      <p>${user.educationPlace || "N/A"}, ${
-    user.primaryDegree || "N/A"
-  }, ${investment}</p>
+      <p>${user.educationPlace || "N/A"}, ${majorName}, ${investment}</p>
     </div>
   `;
 
   return userItem;
 }
+
+function getMajorName(majorId, majorsData) {
+  const major = majorsData.find((major) => major.id === majorId);
+  return major ? major.name : "Major not provided";
+}
+
 async function handleProfilePage() {
   try {
     const userData = await loadCurrentUserData();
-    updateIconBar(userData); 
-    navBar(profileData)
+    updateIconBar(userData);
+    navBar(profileData);
 
     const urlParams = new URLSearchParams(window.location.search);
     const userId = urlParams.get("id");
 
     // Prioritize user ID from URL, fallback to authenticated user if none provided
-    const profileIdToLoad = userId || userData.id; 
+    const profileIdToLoad = userId || userData.id;
 
-    loadProfile(profileIdToLoad, userData); 
+    loadProfile(profileIdToLoad, userData);
   } catch (error) {
     if (error.message === "Unauthorized. Please log in.") {
       // Handle unauthorized access specifically (e.g., redirect to login)
-      window.location.replace("/login-student"); 
+      window.location.replace("/login-student");
     } else {
       // Handle other errors gracefully
       handleError("Error checking authentication or loading profile:", error);
@@ -113,7 +119,9 @@ async function loadCurrentUserData() {
     // Теперь загружаем дополнительные данные пользователя по ID
     const userResponse = await fetch(`/api/user/${userData.id}`);
     if (!userResponse.ok) {
-      throw new Error("Failed to fetch additional user data. Status: " + userResponse.status);
+      throw new Error(
+        "Failed to fetch additional user data. Status: " + userResponse.status
+      );
     }
 
     const additionalUserData = await userResponse.json();
@@ -191,12 +199,12 @@ function logout() {
 }
 
 async function updateIconBar() {
-  const userNameSpan = document.getElementById("navbar-user-name"); 
+  const userNameSpan = document.getElementById("navbar-user-name");
   try {
     // Display a loading message while fetching data
     userNameSpan.textContent = "Loading user...";
 
-    const userData = await loadCurrentUserData();  // Corrected call
+    const userData = await loadCurrentUserData(); // Corrected call
 
     const userProfile = document.querySelector(".user-profile");
 
@@ -208,28 +216,28 @@ async function updateIconBar() {
       userProfile.appendChild(profileImage);
     }
 
-    profileImage.src = userData.profileImage || "assets/icons/default-avatar.png";
+    profileImage.src =
+      userData.profileImage || "assets/icons/default-avatar.png";
     profileImage.onerror = () => {
       profileImage.src = "assets/icons/default-avatar.png"; // Fallback if image fails to load
       console.error("Failed to load profile image. Using default.");
     };
 
     // Update user name using template literals
-    userNameSpan.textContent = `${
-      userData.name || "N/A"
-    } ${userData.surname || "N/A"}`;
+    userNameSpan.textContent = `${userData.name || "N/A"} ${
+      userData.surname || "N/A"
+    }`;
 
-    // Update profile link 
+    // Update profile link
     if (userData && userData.id) {
       const profileLink = document.querySelector('a[href="/profile"]');
       if (profileLink) {
         profileLink.href = `/profile?id=${userData.id}`;
       }
     }
-
   } catch (error) {
     console.error("Error fetching user details:", error);
-    userNameSpan.textContent = "Error loading user data"; 
+    userNameSpan.textContent = "Error loading user data";
   }
 }
 
@@ -262,6 +270,7 @@ function loadMajors() {
   fetch("/api/majors")
     .then(handleFetchResponse)
     .then((majors) => {
+      allMajors = majors; // Store the majors data in the global variable
       populateDropdown("major", majors);
     })
     .catch(handleError("Error fetching majors"));
@@ -314,12 +323,14 @@ function applyFilters() {
   }
 }
 
-function updateStudentList(filteredUsers) {
+async function updateStudentList(filteredUsers) {
   const studentList = document.getElementById("student-list");
   studentList.innerHTML = "";
 
+  const majorsData = await loadMajors();
+
   filteredUsers.forEach((user) => {
-    const userItem = createUserItem(user);
+    const userItem = createUserItem(user, majorsData);
     studentList.appendChild(userItem);
   });
 }

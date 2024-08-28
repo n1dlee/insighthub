@@ -30,8 +30,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 async function loadCurrentUserData() {
   try {
     const response = await fetch("/api/auth-student", {
-      // Assuming this is the correct endpoint based on your controller
-      credentials: "include", // This is important for sending cookies
+      credentials: "include",
     });
 
     if (!response.ok) {
@@ -60,7 +59,7 @@ async function loadCurrentUserData() {
     return currentUserData;
   } catch (error) {
     console.error("Error checking authentication:", error);
-    throw error; // Re-throw the error to be handled by the calling function
+    throw error;
   }
 }
 
@@ -81,9 +80,11 @@ async function loadProfile(profileUserId, currentUserData) {
       profileData = await response.json();
     }
 
-    populateProfile(profileData, currentUserData.id);
+    // Fetch majors data and await its resolution
+    const majorsData = await loadMajors();
+
+    populateProfile(profileData, currentUserData.id, majorsData);
     navBar(profileData, currentUserData.id);
-    hideLoadingIndicator();
   } catch (error) {
     hideLoadingIndicator();
     showError("An error occurred while loading the profile.");
@@ -91,35 +92,49 @@ async function loadProfile(profileUserId, currentUserData) {
   }
 }
 
-async function populateProfile(profileData, currentUserId) {
+async function populateProfile(profileData, currentUserId, majorsData) {
   try {
     console.log("Loading profile for user:", profileData);
 
-    showLoadingIndicator();
-
-    // Обновляем имя и фамилию студента
+    // Update student name and surname
     const studentNameElement = document.getElementById("student-name");
     studentNameElement.textContent = `${profileData.name || "N/A"} ${
       profileData.surname || "N/A"
     }`;
 
-    // Обновляем местоположение
+    // Update location
     document.getElementById("student-location").textContent =
       profileData.location || "Location not provided";
 
-    // Обновляем био
+    // Update bio
     document.getElementById("student-bio").textContent =
       profileData.bio || "Bio not provided";
 
-    // Обновляем образование
+    // Update education
     document.getElementById("student-education").textContent =
       profileData.educationPlace || "Education not provided";
 
-    // Обновляем major
-    document.getElementById("student-major").textContent =
-      profileData.major || "Major not provided";
+    // Убедитесь, что majorsData является массивом
+    const majorsArray = Array.isArray(majorsData) ? majorsData : [];
 
-    // Обновляем статистику (GPA, SAT, IELTS)
+    if (majorsArray.length === 0) {
+      console.error(
+        "No majors data available or data is not in the expected format."
+      );
+    }
+
+    // Найдите название major по ID major'а в profileData
+    const major = majorsArray.find(
+      (major) => major.id === parseInt(profileData.major)
+    );
+
+    // Если major найден, используем его название, если нет, указываем "Major not provided"
+    const majorName = major ? major.name : "Major not provided";
+
+    // Обновите поле major на странице
+    document.getElementById("student-major").textContent = majorName;
+
+    // Update statistics (GPA, SAT, IELTS)
     document.getElementById("student-gpa").textContent =
       profileData.gpa || "N/A";
     document.getElementById("student-sat").textContent =
@@ -130,24 +145,11 @@ async function populateProfile(profileData, currentUserId) {
     // Добавляем иконку изменения профиля, если это профиль текущего пользователя
     addChangeProfileIcon(profileData.id, currentUserId);
 
-    // Обновляем достижения
-    const achievementsList = document.getElementById("student-achievements");
-    achievementsList.innerHTML = "";
+    // Update achievements
+    document.getElementById("student-achievements").textContent =
+      profileData.achievements || "Achievements not provided";
 
-    if (
-      Array.isArray(profileData.achievements) &&
-      profileData.achievements.length > 0
-    ) {
-      profileData.achievements.forEach((achievement) => {
-        const listItem = document.createElement("li");
-        listItem.textContent = achievement;
-        achievementsList.appendChild(listItem);
-      });
-    } else {
-      achievementsList.textContent = "No achievements found";
-    }
-
-    // Обновляем изображение профиля
+    // Update profile image
     const profileImage = document.getElementById("profile-image");
     profileImage.src =
       profileData.profile_image || "assets/icons/default-image.png";
@@ -162,7 +164,7 @@ async function populateProfile(profileData, currentUserId) {
 
 async function navBar() {
   try {
-    const currentUserData = await loadCurrentUserData(); // Load current user data using the provided function
+    const currentUserData = await loadCurrentUserData();
 
     document.getElementById("loading-student-name").textContent = `${
       currentUserData.name || "N/A"
@@ -177,7 +179,6 @@ async function navBar() {
 function addChangeProfileIcon(profileDataId, currentUserId) {
   const studentNameElement = document.getElementById("student-name");
 
-  // Проверяем, совпадают ли ID текущего пользователя и ID профиля
   if (profileDataId === currentUserId && studentNameElement) {
     const changeProfileLink = document.createElement("a");
     changeProfileLink.href = `/profile-change?id=${profileDataId}`;
@@ -185,7 +186,7 @@ function addChangeProfileIcon(profileDataId, currentUserId) {
     const changeProfileIcon = document.createElement("img");
     changeProfileIcon.src = "assets/icons/change-profile.png";
     changeProfileIcon.alt = "Change Profile";
-    changeProfileIcon.className = "change-profile-icon"; // Используем className вместо add() для единичного класса
+    changeProfileIcon.className = "change-profile-icon";
 
     changeProfileLink.appendChild(changeProfileIcon);
     studentNameElement.appendChild(changeProfileLink);
@@ -193,20 +194,15 @@ function addChangeProfileIcon(profileDataId, currentUserId) {
 }
 
 async function onLoginSuccess() {
-  // ... (другой код, связанный с логином, например, скрытие формы логина и т.д.)
-
   try {
-    const currentUserData = await loadCurrentUserData(); // Обновляем данные текущего пользователя
+    const currentUserData = await loadCurrentUserData();
 
-    // Получаем ID пользователя из URL (предполагается, что он там есть после логина)
     const urlParams = new URLSearchParams(window.location.search);
     const profileUserId = urlParams.get("id");
 
     if (profileUserId) {
-      loadProfile(profileUserId, currentUserData.id); // Загружаем профиль с обновленными данными
+      loadProfile(profileUserId, currentUserData.id);
     } else {
-      // Если ID пользователя не найден в URL, можно перенаправить на страницу профиля
-      // или выполнить другое действие, в зависимости от логики вашего приложения
       window.location.replace(`/profile?id=${currentUserData.id}`);
     }
   } catch (error) {
@@ -231,6 +227,16 @@ async function logout() {
   }
 }
 
+async function loadMajors() {
+  try {
+    const response = await fetch("/api/majors");
+    return handleFetchResponse(response);
+  } catch (error) {
+    handleError("Error fetching majors:", error);
+    throw error; // Re-throw the error to be caught in loadProfile
+  }
+}
+
 function showLoadingIndicator() {
   const loadingContainer = document.getElementById("loading-indicator");
   if (loadingContainer) {
@@ -252,4 +258,16 @@ function showError(message) {
     errorMessageElement.textContent = message;
     errorMessageElement.style.display = "block";
   }
+}
+
+function handleFetchResponse(response) {
+  if (!response.ok) {
+    throw new Error(`HTTP error! Status: ${response.status}`);
+  }
+  return response.json();
+}
+
+function handleError(message, error) {
+  console.error(message, error);
+  alert(error?.message || message);
 }

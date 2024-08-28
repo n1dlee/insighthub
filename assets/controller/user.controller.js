@@ -175,10 +175,15 @@ class UserController {
   async getMajors(req, res, next) {
     try {
       const majors = await Major.findAll();
+
+      if (majors.length === 0) {
+        return res.status(404).json({ message: "No majors found" });
+      }
+
       res.json(majors);
     } catch (error) {
       console.error("Error fetching majors:", error);
-      next(ApiError.internal("Error fetching majors"));
+      next(ApiError.internal("An error occurred while fetching majors"));
     }
   }
 
