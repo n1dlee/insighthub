@@ -239,17 +239,16 @@ async function loadMajors() {
 
 function showLoadingIndicator() {
   const loadingContainer = document.getElementById("loading-indicator");
-  if (loadingContainer) {
-    loadingContainer.textContent = "Loading...";
-    loadingContainer.style.display = "block";
-  }
+  const formElements = document.querySelectorAll("form input, form select");
+  formElements.forEach((el) => (el.disabled = true)); // Disable form elements
+  if (loadingContainer) loadingContainer.style.display = "block";
 }
 
 function hideLoadingIndicator() {
   const loadingContainer = document.getElementById("loading-indicator");
-  if (loadingContainer) {
-    loadingContainer.style.display = "none";
-  }
+  const formElements = document.querySelectorAll("form input, form select");
+  formElements.forEach((el) => (el.disabled = false)); // Enable form elements
+  if (loadingContainer) loadingContainer.style.display = "none";
 }
 
 function showError(message) {
@@ -267,7 +266,10 @@ function handleFetchResponse(response) {
   return response.json();
 }
 
-function handleError(message, error) {
-  console.error(message, error);
-  alert(error?.message || message);
+function handleError(defaultMessage) {
+  return (error) => {
+    console.error(defaultMessage, error);
+    showError(error.message || defaultMessage);
+    alert("An error occurred: " + (error.message || defaultMessage)); // Additional feedback
+  };
 }

@@ -2,11 +2,16 @@ const universitySelect = document.getElementById("university");
 const majorSelect = document.getElementById("major");
 const investmentSelect = document.getElementById("investment");
 
-document.addEventListener("DOMContentLoaded", () => {
-  loadUsers();
-  loadUniversities();
-  loadMajors();
-
+document.addEventListener("DOMContentLoaded", async () => {
+  try {
+    allMajors = await loadMajors();
+    populateDropdown("major", allMajors);
+    loadUsers();
+    loadUniversities();
+    loadMajors();
+  } catch (error) {
+    showError(error.message);
+  }
   // Check if on the profile page and handle authentication
   if (window.location.pathname === "/profile") {
     handleProfilePage();
@@ -46,12 +51,15 @@ function loadUsers() {
     .catch(handleError("Error loading user data"));
 }
 
-function createUserItem(user) {
+function createUserItem(user, majorsData) {
   const userItem = document.createElement("div");
   userItem.classList.add("student-item");
 
   const investment = user.investment ? `$${user.investment}/year` : "N/A";
-  const majorName = getMajorName(user.major, allMajors); // Pass allMajors to getMajorName
+
+  // Find the major name using the major ID from the user data
+  const major = majorsData.find((major) => major.id === parseInt(user.major));
+  const majorName = major ? major.name : "Major not provided";
 
   userItem.innerHTML = `
     <div class="user-avatar"></div> 
@@ -266,14 +274,20 @@ function loadUniversities() {
     .catch(handleError("Error fetching universities"));
 }
 
-function loadMajors() {
-  fetch("/api/majors")
-    .then(handleFetchResponse)
-    .then((majors) => {
-      allMajors = majors; // Store the majors data in the global variable
-      populateDropdown("major", majors);
-    })
-    .catch(handleError("Error fetching majors"));
+async function loadMajors() {
+  try {
+    const response = await fetch("/api/majors");
+    if (!response.ok) {
+      throw new Error(
+        "Failed to fetch majors data. Status: " + response.status
+      );
+    }
+    const majors = await response.json();
+    allMajors = majors;
+    return majors;
+  } catch (error) {
+    handleError("Error fetching majors:")(error);
+  }
 }
 
 function populateDropdown(dropdownId, data) {
@@ -288,27 +302,41 @@ function populateDropdown(dropdownId, data) {
 
 function applyFilters() {
   const selectedUniversity = universitySelect.value;
-  const selectedMajor = majorSelect.value;
+  const selectedMajorName = majorSelect.value.trim().toLowerCase();
   const selectedInvestment = investmentSelect.value;
 
   const isUniversityFilterApplied = selectedUniversity !== "University";
-  const isMajorFilterApplied = selectedMajor !== "Major";
+  const isMajorFilterApplied = selectedMajorName !== "major";
 
   let filteredUsers = allUsers;
 
+  console.log("All Users:", allUsers);
+
+  // Фильтрация по университету и специальности
   if (isUniversityFilterApplied || isMajorFilterApplied) {
-    filteredUsers = filteredUsers.filter(
-      (user) =>
+    filteredUsers = filteredUsers.filter((user) => {
+      const userMajorId = parseInt(user.major); // Получаем ID специальности пользователя
+
+      // Находим ID специальности, соответствующий выбранному названию специальности
+      const selectedMajor = allMajors.find(
+        (major) => major.name.trim().toLowerCase() === selectedMajorName
+      );
+
+      const selectedMajorId = selectedMajor ? selectedMajor.id : null;
+
+      return (
         (!isUniversityFilterApplied ||
           user.educationPlace === selectedUniversity) &&
-        (!isMajorFilterApplied || user.primaryDegree === selectedMajor)
-    );
+        (!isMajorFilterApplied || userMajorId === selectedMajorId)
+      );
+    });
   }
 
+  // Фильтрация по инвестициям
   if (selectedInvestment !== "Investment") {
     const [min, max] = selectedInvestment
       .split("-")
-      .map((val) => parseInt(val.replace("$", ""))); // Corrected line
+      .map((val) => parseInt(val.replace("$", "")));
     filteredUsers = filteredUsers.filter(
       (user) => user.investment >= min && user.investment <= max
     );
@@ -323,10 +351,12 @@ function applyFilters() {
   }
 }
 
+// Update the student list by applying filters and creating user items
 async function updateStudentList(filteredUsers) {
   const studentList = document.getElementById("student-list");
   studentList.innerHTML = "";
 
+  // Ensure that majors data is loaded before updating the student list
   const majorsData = await loadMajors();
 
   filteredUsers.forEach((user) => {
@@ -337,16 +367,16 @@ async function updateStudentList(filteredUsers) {
 
 function showLoadingIndicator() {
   const loadingContainer = document.getElementById("loading-indicator");
-  if (loadingContainer) {
-    loadingContainer.style.display = "block";
-  }
+  const formElements = document.querySelectorAll("form input, form select");
+  formElements.forEach((el) => (el.disabled = true)); // Disable form elements
+  if (loadingContainer) loadingContainer.style.display = "block";
 }
 
 function hideLoadingIndicator() {
   const loadingContainer = document.getElementById("loading-indicator");
-  if (loadingContainer) {
-    loadingContainer.style.display = "none";
-  }
+  const formElements = document.querySelectorAll("form input, form select");
+  formElements.forEach((el) => (el.disabled = false)); // Enable form elements
+  if (loadingContainer) loadingContainer.style.display = "none";
 }
 
 function showError(message) {
@@ -372,8 +402,8 @@ function handleFetchResponse(response) {
 // Helper function to create error handlers
 function handleError(defaultMessage) {
   return (error) => {
-    hideLoadingIndicator();
     console.error(defaultMessage, error);
     showError(error.message || defaultMessage);
+    alert("An error occurred: " + (error.message || defaultMessage)); // Additional feedback
   };
 }
