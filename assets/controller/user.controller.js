@@ -15,7 +15,9 @@ const generateJwt = (id, email) => {
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    const userId = req.body.userId || req.params.userId; // Get the user ID from the request
+    const token = req.cookies.authToken; // Get the JWT from the request cookies
+    const decoded = jwt.verify(token, process.env.JWT_TOKEN); // Verify the token and extract the user ID
+    const userId = decoded.id;
     const uploadDir = `assets/uploads/${userId}`; // Create a directory for each user
     fs.mkdirSync(uploadDir, { recursive: true }); // Create the directory if it doesn't exist
     cb(null, uploadDir); // Set the upload directory
