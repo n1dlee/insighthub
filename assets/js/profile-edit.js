@@ -25,8 +25,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     // Populate read-only fields for the logged-in user
     const readOnlyFields = ["name", "surname", "education"];
     populateFormFields(profileEditForm, currentUserData, readOnlyFields);
-
-    // Load majors and populate dropdown
     loadMajors();
 
     // Fetch additional profile data if editing another user's profile
@@ -47,13 +45,11 @@ document.addEventListener("DOMContentLoaded", async () => {
       populateFormFields(profileEditForm, profileData, editableFields);
     }
 
-    // Set the initial profile image (if available)
-    const profileImageInput = document.getElementById("profileImage");
     if (currentUserData.profileImage) {
       const img = document.createElement("img");
       img.src = currentUserData.profileImage;
       img.alt = "Current Profile Image";
-      profileImageInput.parentNode.insertBefore(img, profileImageInput); // Add image before the input
+      profileImageInput.parentNode.insertBefore(img, profileImageInput);
     }
   } catch (error) {
     handleError("Error loading profile data:", error);
@@ -64,8 +60,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     event.preventDefault();
 
     const formData = new FormData(profileEditForm);
-
-    // Only send updated fields to the server
     const updatedFields = {};
     for (const [key, value] of formData.entries()) {
       if (key !== "id" && value !== "") {
@@ -138,33 +132,24 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   function populateFormFields(form, data, fieldsToPopulate) {
-    const readOnlyFields = ["name", "surname", "education"];
-
-    for (const key of fieldsToPopulate) {
+    fieldsToPopulate.forEach((key) => {
       const field = form.querySelector(`#${key}`);
-
       if (!field) {
         console.warn(`Field with ID '${key}' not found in the form.`);
-        continue;
+        return;
       }
 
-      // Проверяем тип элемента и устанавливаем значение соответствующим образом
       if (field.tagName.toLowerCase() === "span") {
-        field.textContent = data[key] ?? "";
+        field.textContent = data[key] || "";
       } else {
-        field.value = data[key] ?? "";
+        field.value = data[key] || "";
       }
 
-      if (readOnlyFields.includes(key)) {
-        if (field.tagName.toLowerCase() === "span") {
-          field.contentEditable = false;
-        } else {
-          field.readOnly = true;
-        }
+      if (["name", "surname", "education"].includes(key)) {
+        field.readOnly = true;
       }
-    }
+    });
 
-    // Дополнительно, если нужно заполнить h1 для имени и фамилии:
     const nameField = form.querySelector("#name");
     const surnameField = form.querySelector("#surname");
     const educationField = form.querySelector("#education");
@@ -188,16 +173,16 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   function populateDropdown(dropdownId, items) {
     const dropdown = document.getElementById(dropdownId);
-    if (dropdown) {
-      items.forEach((item) => {
-        const option = document.createElement("option");
-        option.value = item.id;
-        option.textContent = item.name;
-        dropdown.appendChild(option);
-      });
-    } else {
+    if (!dropdown) {
       console.warn(`Dropdown with ID '${dropdownId}' not found.`);
+      return;
     }
+    items.forEach((item) => {
+      const option = document.createElement("option");
+      option.value = item.id;
+      option.textContent = item.name;
+      dropdown.appendChild(option);
+    });
   }
 
   function handleError(message, error) {

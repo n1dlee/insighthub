@@ -9,6 +9,10 @@ const router = express.Router();
 router.post("/user", userController.createUser);
 router.post("/login", userController.login);
 router.post("/logout", userController.logout);
+router.post(
+  "/user/:id/upload-profile-image",
+  userController.uploadProfileImage
+);
 router.get("/auth-student", authMiddleware, userController.check);
 router.get("/users", authMiddleware, userController.getUsers);
 router.get("/user/:id", authMiddleware, userController.getOneUser);

@@ -151,8 +151,12 @@ async function populateProfile(profileData, currentUserId, majorsData) {
 
     // Update profile image
     const profileImage = document.getElementById("profile-image");
-    profileImage.src =
-      profileData.profile_image || "assets/icons/default-image.png";
+    const imageUrl = `/assets/uploads/${profileData.id}/image.png`; // Construct the image URL
+    profileImage.src = imageUrl;
+
+    profileImage.onerror = function () {
+      profileImage.src = "assets/icons/default-image.png"; // Fall back to a default image
+    };
 
     hideLoadingIndicator();
   } catch (error) {

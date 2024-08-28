@@ -9,6 +9,11 @@
       rel="stylesheet"
     />
     <link rel="stylesheet" href="assets/css/styles.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css"
+    />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
   </head>
   <body>
     <header>
@@ -36,7 +41,18 @@
     <div class="edit-profile-container">
       <form id="profileEditForm" enctype="multipart/form-data">
         <label for="profileImage">Profile Image:</label>
-        <input type="file" id="profileImage" name="profileImage" />
+        <input
+          type="file"
+          id="profileImage"
+          name="profileImage"
+          accept="image/png, image/jpeg, image/jpg"
+        />
+        <div id="image-preview-container" style="display: none">
+          <img id="image-preview" src="" alt="Image Preview" />
+          <div id="crop-controls">
+            <button id="crop-button">Crop & Save</button>
+          </div>
+        </div>
 
         <div class="name-address">
           <label for="name">Name:</label>
@@ -136,6 +152,7 @@
         <button type="discard">Back To Profile</button>
       </form>
     </div>
+    <script src="assets/js/image-crop.js"></script>
     <script src="assets/js/profile-edit.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios@0.21.1/dist/axios.min.js"></script>
   </body>

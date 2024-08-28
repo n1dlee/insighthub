@@ -4,11 +4,40 @@ const jwt = require("jsonwebtoken");
 const Student = require("../models/student.model"); // Your Student model
 const University = require("../models/university.model");
 const Major = require("../models/major.model");
+const multer = require("multer");
+const path = require("path");
+const fs = require("fs");
 require("dotenv").config();
 
 const generateJwt = (id, email) => {
   return jwt.sign({ id, email }, process.env.JWT_TOKEN, { expiresIn: "24h" });
 };
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const userId = req.body.userId || req.params.userId; // Get the user ID from the request
+    const uploadDir = `assets/uploads/${userId}`; // Create a directory for each user
+    fs.mkdirSync(uploadDir, { recursive: true }); // Create the directory if it doesn't exist
+    cb(null, uploadDir); // Set the upload directory
+  },
+  filename: (req, file, cb) => {
+    cb(null, `image.png`); // You can also generate a unique filename if needed
+  },
+});
+
+const upload = multer({
+  storage: storage,
+  limits: {
+    fileSize: 3 * 1024 * 1024, // 3 MB limit
+  },
+  fileFilter: function (req, file, cb) {
+    const ext = path.extname(file.originalname).toLowerCase();
+    if (ext !== ".png" && ext !== ".jpg" && ext !== ".jpeg") {
+      return cb(new Error("Only images are allowed"), false);
+    }
+    cb(null, true);
+  },
+});
 
 class UserController {
   async createUser(req, res, next) {
@@ -232,6 +261,49 @@ class UserController {
       console.error("Error updating user:", error);
       next(ApiError.internal("Error updating user", error));
     }
+  }
+
+  async uploadProfileImage(req, res, next) {
+    upload.single("profileImage")(req, res, async (err) => {
+      if (err) {
+        if (
+          err instanceof multer.MulterError &&
+          err.code === "LIMIT_FILE_SIZE"
+        ) {
+          return next(ApiError.badRequest("File size exceeds 3MB limit"));
+        } else {
+          return next(ApiError.badRequest(err.message));
+        }
+      }
+
+      try {
+        const profileImage = req.file;
+
+        if (!profileImage) {
+          return next(ApiError.badRequest("No image uploaded"));
+        }
+
+        // Extract the user ID from the authenticated user's data
+        const token = req.cookies.authToken;
+        const decodedToken = jwt.verify(token, process.env.JWT_TOKEN);
+        const userId = decodedToken.id;
+
+        const user = await Student.findByPk(userId);
+        if (!user) {
+          return next(ApiError.notFound("User not found"));
+        }
+
+        user.profile_image = profileImage.filename;
+        await user.save();
+
+        res.json({
+          message: "Image uploaded successfully",
+          filename: profileImage.filename,
+        });
+      } catch (error) {
+        next(ApiError.internal("Error uploading image"));
+      }
+    });
   }
 
   async deleteUser(req, res, next) {

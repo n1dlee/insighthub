@@ -1,15 +1,14 @@
 const express = require("express");
 const cookieParser = require("cookie-parser");
-const cors = require('cors');
+const cors = require("cors");
+const path = require("path");
+const sequelize = require("./db");
+const errorHandler = require("./assets/middleware/ErrorHandlingMiddleware");
+
 const userRouter = require("./assets/routes/user.routes");
 const investorPostRouter = require("./assets/routes/investor-post.routes");
 const studentPostRouter = require("./assets/routes/student-post.routes");
 const investorRouter = require("./assets/routes/investor.routes");
-const bcrypt = require("bcrypt");
-const path = require("path");
-const fs = require("fs");
-const sequelize = require("./db");
-const errorHandler = require("./assets/middleware/ErrorHandlingMiddleware");
 
 const PORT = process.env.PORT || 8080;
 const app = express();
@@ -19,10 +18,12 @@ app.use(express.json());
 app.use(cookieParser());
 
 // CORS Headers Middleware (Adjust as needed for your development/production setup)
-app.use(cors({
-  origin: true, // Allow any origin in development (not secure for production)
-  credentials: true 
-}));
+app.use(
+  cors({
+    origin: true, // Allow any origin in development (not secure for production)
+    credentials: true,
+  })
+);
 
 // CORS Headers Middleware
 app.use((req, res, next) => {
@@ -114,7 +115,7 @@ app.get("/legal-terms", (req, res) => {
 // Register route
 app.post("/register", (req, res) => {
   const user = req.body;
-  addUser(user, (results) => {
+  addUser(user, () => {
     res.send("User added successfully");
   });
 });
