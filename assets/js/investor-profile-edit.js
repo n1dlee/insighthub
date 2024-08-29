@@ -1,3 +1,6 @@
+let workHistoryCount = 0;
+let workExperienceCount = 0;
+
 document.addEventListener("DOMContentLoaded", async () => {
   const profileEditForm = document.getElementById("profileEditForm");
   const workHistoryEntries = document.getElementById("work-history-entries");
@@ -37,11 +40,17 @@ document.addEventListener("DOMContentLoaded", async () => {
     );
 
     addWorkHistoryButton.addEventListener("click", () => {
-      addWorkHistoryEntry(workHistoryEntries);
+      if (workHistoryCount < 10) {
+        addWorkHistoryEntry(workHistoryEntries);
+        workHistoryCount++;
+      }
     });
 
     addWorkExperienceButton.addEventListener("click", () => {
-      addWorkExperienceEntry(workExperienceEntries);
+      if (workExperienceCount < 10) {
+        addWorkExperienceEntry(workExperienceEntries);
+        workExperienceCount++;
+      }
     });
   } catch (error) {
     handleError("Error loading investor data:", error);
@@ -148,6 +157,8 @@ function populateFormFields(form, data) {
       if (field) {
         if (field.tagName.toLowerCase() === "textarea") {
           field.value = data[key] || "";
+        } else if (field.type === "checkbox") {
+          field.checked = data[key];
         } else {
           field.value = data[key] || "";
         }
@@ -156,9 +167,85 @@ function populateFormFields(form, data) {
   }
 }
 
+function addWorkHistoryEntry(container, experience = {}, index = 0) {
+  const entryTemplate = document.getElementById("work-history-entry-template");
+  const entryClone = entryTemplate.content.cloneNode(true);
+  const entryFields = entryClone.querySelectorAll("input, textarea, select");
+
+  entryFields.forEach((field) => {
+    field.name = `workHistory[${index}][${field.name}]`;
+    if (experience[field.name]) {
+      if (field.tagName.toLowerCase() === "textarea") {
+        field.value = experience[field.name];
+      } else if (field.type === "checkbox") {
+        field.checked = experience[field.name];
+      } else {
+        field.value = experience[field.name];
+      }
+    }
+  });
+
+  container.appendChild(entryClone);
+}
+
+function addWorkExperienceEntry(container, experience = {}, index = 0) {
+  const entryTemplate = document.getElementById(
+    "work-experience-entry-template"
+  );
+  const entryClone = entryTemplate.content.cloneNode(true);
+  const entryFields = entryClone.querySelectorAll("input, textarea, select");
+
+  entryFields.forEach((field) => {
+    field.name = `workExperience[${index}][${field.name}]`;
+    if (experience[field.name]) {
+      if (field.tagName.toLowerCase() === "textarea") {
+        field.value = experience[field.name];
+      } else if (field.type === "checkbox") {
+        field.checked = experience[field.name];
+      } else {
+        field.value = experience[field.name];
+      }
+    }
+  });
+
+  container.appendChild(entryClone);
+}
+
+function collectExperienceData(container, type) {
+  const entries = container.children;
+  const data = [];
+
+  for (let i = 0; i < entries.length; i++) {
+    const entryFields = entries[i].querySelectorAll("input, textarea, select");
+    const entryData = {};
+
+    entryFields.forEach((field) => {
+      if (field.name.startsWith(`${type}[${i}]`)) {
+        const key = field.name.replace(`${type}[${i}][`, "").replace("]", "");
+        if (field.tagName.toLowerCase() === "textarea") {
+          entryData[key] = field.value;
+        } else if (field.type === "checkbox") {
+          entryData[key] = field.checked;
+        } else {
+          entryData[key] = field.value;
+        }
+      }
+    });
+
+    data.push(entryData);
+  }
+
+  return data;
+}
+
 function handleError(message, error) {
-  console.error(message, error);
-  alert(error?.message || message);
+  console.error(`${message}:`, error);
+  alert(`${message} ${error.message}`);
+}
+
+function handleSuccess(message) {
+  console.log(`${message}`);
+  alert(`${message}`);
 }
 
 function handleFetchResponse(response) {

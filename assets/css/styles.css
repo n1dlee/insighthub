@@ -893,55 +893,26 @@ input[type="checkbox"] {
   background-color: #1a6e15;
 }
 
-.work-history-section,
-.work-experience-section {
-  /* Стили для контейнеров вкладок */
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  padding: 15px;
-  margin-top: 10px;
-  margin-bottom: 20px;
+.work-history label,
+.work-experience label {
+  display: block;
+  margin-bottom: 5px;
 }
 
-.work-history-entry,
-.work-experience-entry {
-  /* Стили для отдельных записей опыта */
-  border: 1px solid #eee;
-  border-radius: 5px;
-  padding: 10px;
-  margin-bottom: 10px;
-  margin-top: 10px;
+.work-history textarea,
+.work-experience textarea {
+  width: 100%;
+  resize: vertical;
+  min-height: 80px;
+  max-height: 150px; /* add a max height to limit the description */
 }
 
-.work-history-entry h4,
-.work-experience-entry h4 {
-  /* Стили для заголовков записей */
-  margin-top: 0;
-  font-size: 1.1rem;
-  font-weight: bold;
+.work-history textarea {
+  maxlength: 10; /* limit to 10 words */
 }
 
-.work-history-entry p,
-.work-experience-entry p {
-  /* Стили для описания в записях */
-  margin: 5px 0;
-}
-
-.work-history-entry button,
-.work-experience-entry button {
-  /* Стили для кнопок "Remove" */
-  background-color: #dc3545; /* Красный цвет */
-  color: white;
-  border: none;
-  padding: 5px 10px;
-  border-radius: 3px;
-  cursor: pointer;
-  margin-top: 20px;
-}
-
-.work-history-entry button:hover,
-.work-experience-entry button:hover {
-  background-color: #7c131e; /* Более темный красный при наведении */
+.work-experience textarea {
+  maxlength: 50; /* limit to 50 words */
 }
 
 .discard-button {
@@ -1090,14 +1061,21 @@ input[type="checkbox"] {
   border-top-color: white;
   animation: spin 1s linear infinite;
   margin-right: 10px; /* Add some space between the spinner and text */
+  animation: spin 1s ease-in-out infinite;
 }
 
 @keyframes spin {
   0% {
-    transform: rotate(0deg);
+    transform: rotate(0deg) scale(0.8);
+    opacity: 0.5;
+  }
+  50% {
+    transform: rotate(180deg) scale(1);
+    opacity: 1;
   }
   100% {
-    transform: rotate(360deg);
+    transform: rotate(360deg) scale(0.8);
+    opacity: 0.5;
   }
 }
 

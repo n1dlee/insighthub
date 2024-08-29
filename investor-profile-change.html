@@ -73,29 +73,24 @@
         <label for="bio">Bio:</label>
         <textarea id="bio" name="bio"></textarea>
 
-        <div class="experience-tabs">
-          <button
-            type="button"
-            class="tab-button active"
-            data-tab="work-history"
-          >
-            Work History
-          </button>
-
-          <button type="button" class="tab-button" data-tab="work-experience">
-            Work Experience
-          </button>
-        </div>
-        <div class="tab-content" id="work-history">
-          <div id="work-history-entries"></div>
+        <div class="work-history">
+          <label>Work History:</label>
+          <div id="work-history-entries">
+            <!-- dynamically generated work history entries will appear here -->
+          </div>
           <button type="button" id="add-work-history">Add Work History</button>
         </div>
-        <div class="tab-content" id="work-experience" style="display: none">
-          <div id="work-experience-entries"></div>
+
+        <div class="work-experience">
+          <label>Work Experience:</label>
+          <div id="work-experience-entries">
+            <!-- dynamically generated work experience entries will appear here -->
+          </div>
           <button type="button" id="add-work-experience">
             Add Work Experience
           </button>
         </div>
+
         <button type="submit">Save</button>
         <a href="/investor-profile" class="discard-button">Back To Profile</a>
       </form>

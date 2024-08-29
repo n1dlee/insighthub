@@ -2,6 +2,8 @@ const ApiError = require("../error/ApiError");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const Investor = require("../models/investor.model");
+const WorkHistory = require("../models/workHistory.model");
+const WorkExperience = require("../models/workExperience.model");
 const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
@@ -316,9 +318,10 @@ class investorController {
         await investor.destroy();
         res.json({ message: "Investor deleted successfully" });
       } else {
-        next(ApiError.badRequest("Investor not found"));
+        return next(ApiError.notFound("Investor not found"));
       }
     } catch (error) {
+      console.error("Error deleting investor:", error);
       next(ApiError.internal("Error deleting investor"));
     }
   }

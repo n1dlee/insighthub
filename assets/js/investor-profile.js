@@ -261,21 +261,18 @@ function handleError(defaultMessage) {
   };
 }
 
-// Функция для отображения индикатора загрузки
 function showLoadingIndicator() {
   const loadingContainer = document.getElementById("loading-indicator");
-  if (loadingContainer) {
-    loadingContainer.textContent = "Loading...";
-    loadingContainer.style.display = "block";
-  }
+  const formElements = document.querySelectorAll("form input, form select");
+  formElements.forEach((el) => (el.disabled = true)); // Disable form elements
+  if (loadingContainer) loadingContainer.style.display = "block";
 }
 
-// Функция для скрытия индикатора загрузки
 function hideLoadingIndicator() {
   const loadingContainer = document.getElementById("loading-indicator");
-  if (loadingContainer) {
-    loadingContainer.style.display = "none";
-  }
+  const formElements = document.querySelectorAll("form input, form select");
+  formElements.forEach((el) => (el.disabled = false)); // Enable form elements
+  if (loadingContainer) loadingContainer.style.display = "none";
 }
 
 function showError(message) {

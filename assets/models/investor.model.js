@@ -1,5 +1,7 @@
-const sequelize = require("../../db"); // Assuming your db.js is located at '../../db'
+const sequelize = require("../../db");
 const { DataTypes } = require("sequelize");
+const workHistory = require("./workHistory.model"); // Import workHistory model
+const workExperience = require("./workExperience.model"); // Import workExperience model
 
 const investor = sequelize.define(
   "investor",
@@ -15,8 +17,6 @@ const investor = sequelize.define(
     companyName: { type: DataTypes.STRING, allowNull: false },
     jobFunc: { type: DataTypes.STRING, allowNull: false },
     bio: { type: DataTypes.TEXT, allowNull: true }, // Assuming bio can be longer text
-    workHistory: { type: DataTypes.STRING, allowNull: true },
-    workExperience: { type: DataTypes.TEXT, allowNull: true }, // Assuming achievements can be longer text
     profile_image: { type: DataTypes.STRING, allowNull: true },
     location: { type: DataTypes.STRING, allowNull: true },
   },
@@ -24,5 +24,8 @@ const investor = sequelize.define(
     tableName: "investor", // If you need to explicitly specify the table name
   }
 );
+
+investor.hasMany(workHistory, { foreignKey: "investorId" });
+investor.hasMany(workExperience, { foreignKey: "investorId" });
 
 module.exports = investor;
