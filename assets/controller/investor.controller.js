@@ -51,7 +51,7 @@ class investorController {
         email,
         password,
         livesOutsideUS,
-        workPlace,
+        location,
         companyName,
         jobFunc,
       } = req.body;
@@ -62,7 +62,7 @@ class investorController {
         "age",
         "email",
         "password",
-        "workPlace",
+        "location",
         "jobFunc",
       ];
 
@@ -89,7 +89,7 @@ class investorController {
         email,
         password: hashPassword,
         livesOutsideUS,
-        workPlace,
+        location,
         companyName,
         jobFunc,
       });
@@ -199,7 +199,6 @@ class investorController {
       const {
         profile_image,
         location,
-        workPlace,
         companyName,
         jobFunc,
         bio,
@@ -221,7 +220,7 @@ class investorController {
       // Update investor data only if the field has been changed
       if (profile_image) investor.profile_image = profile_image;
       if (location) investor.location = location;
-      if (workPlace) investor.workPlace = workPlace;
+      if (location) investor.location = location;
       if (companyName) investor.companyName = companyName;
       if (jobFunc) investor.jobFunc = jobFunc;
       if (bio) investor.bio = bio;

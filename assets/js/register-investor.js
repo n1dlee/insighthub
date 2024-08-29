@@ -23,14 +23,14 @@ function handleFormSubmission() {
     ).value;
     const livesOutsideUS =
       registrationForm.querySelector("#outside-us").checked;
-    const workPlace = registrationForm.querySelector("#workplace").value; // Assuming you have this field for investors
+    const location = registrationForm.querySelector("#workplace").value; // Assuming you have this field for investors
     const companyName = registrationForm.querySelector("#company-name").value; // Assuming this is optional
     const jobFunc = registrationForm.querySelector(
       "#primary-job-function"
     ).value; // Assuming you have this field
 
     // Basic validation
-    if (!name || !surname || !age || !email || !workPlace || !jobFunc) {
+    if (!name || !surname || !age || !email || !location || !jobFunc) {
       alert("Please fill in all required fields.");
       return;
     }
@@ -48,7 +48,7 @@ function handleFormSubmission() {
       email,
       password,
       livesOutsideUS,
-      workPlace,
+      location,
       companyName: companyName || null,
       jobFunc,
     };

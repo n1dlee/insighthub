@@ -166,13 +166,22 @@ async function populateProfile(profileData, currentUserId, majorsData) {
   }
 }
 
-async function navBar() {
+// Функция для обновления данных в навигационной панели (navBar)
+async function navBar(profileData, currentUserId) {
   try {
+    // В данном случае, предполагаем, что в навигационной панели отображается только имя и фамилия текущего пользователя
+    // Если требуется отображать больше данных или данные другого пользователя, измените логику соответственно
+
     const currentUserData = await loadCurrentUserData();
 
-    document.getElementById("loading-student-name").textContent = `${
+    document.querySelector(".user-name").textContent = `${
       currentUserData.name || "N/A"
     } ${currentUserData.surname || "N/A"}`;
+
+    // Если просматривается свой профиль, добавляем ссылку на редактирование профиля
+    if (profileData.id === currentUserId) {
+      addChangeProfileIcon(profileData.id, currentUserId);
+    }
   } catch (error) {
     hideLoadingIndicator();
     showError("An error occurred while loading the user data.");

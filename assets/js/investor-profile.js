@@ -1,14 +1,14 @@
 document.addEventListener("DOMContentLoaded", async () => {
   const urlParams = new URLSearchParams(window.location.search);
-  const investorId = urlParams.get("id");
+  const investorId = urlParams.get("id"); // ID инвестора из URL
 
   if (!investorId) {
-    window.location.replace("/login");
+    window.location.replace("/login"); // Перенаправление на страницу входа, если ID не найден
     return;
   }
 
   try {
-    loadProfile(investorId);
+    const currentUserData = await loadCurrentUserData(); // Загрузка данных текущего пользователя
 
     const logoutLink = document.querySelector(
       '.dropdown-menu a[href="/logout"]'
@@ -16,27 +16,77 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (logoutLink) {
       logoutLink.addEventListener("click", async (event) => {
         event.preventDefault();
-        await logout();
+        await logout(); // Выход из системы
       });
     }
+
+    loadProfile(investorId, currentUserData); // Загрузка профиля инвестора
   } catch (error) {
-    handleError("Error loading investor profile:", error);
+    handleError("Error checking authentication or loading profile:", error);
+    window.location.replace("/login"); // Перенаправление на страницу входа в случае ошибки
   }
 });
 
-async function loadProfile(investorId) {
+// Функция для загрузки данных текущего пользователя
+async function loadCurrentUserData() {
+  try {
+    const response = await fetch("/api/auth-investor", {
+      // Запрос к API для аутентификации инвестора
+      credentials: "include",
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(
+        "Error response from /api/auth-investor:",
+        response.status,
+        errorText
+      );
+
+      if (response.status === 401) {
+        throw new Error("Unauthorized. Please log in.");
+      } else {
+        throw new Error(
+          `Network response was not ok. Status: ${response.status}. Server message: ${errorText}`
+        );
+      }
+    }
+
+    const currentUserData = await response.json();
+    if (!currentUserData || !currentUserData.id) {
+      console.error("Invalid user data received from server:", currentUserData);
+      throw new Error("No user data or ID found.");
+    }
+
+    return currentUserData;
+  } catch (error) {
+    console.error("Error checking authentication:", error);
+    throw error;
+  }
+}
+
+// Функция для загрузки профиля инвестора
+async function loadProfile(investorId, currentUserData) {
   try {
     showLoadingIndicator();
 
-    const response = await fetch(`/api/investor/${investorId}`);
-    if (!response.ok) {
-      throw new Error(
-        "Failed to fetch investor profile data. Status: " + response.status
-      );
+    let investorData;
+    if (investorId === currentUserData.id) {
+      // Если просматривается свой профиль
+      investorData = currentUserData;
+    } else {
+      // Если просматривается профиль другого инвестора
+      const response = await fetch(`/api/investor/${investorId}`);
+      if (!response.ok) {
+        throw new Error(
+          "Failed to fetch profile data. Status: " + response.status
+        );
+      }
+      investorData = await response.json();
     }
-    const investorData = await response.json();
 
-    populateProfile(investorData);
+    populateProfile(investorData, currentUserData.id);
+    navBar(investorData, currentUserData.id); // Обновление данных в навигационной панели
   } catch (error) {
     hideLoadingIndicator();
     showError("An error occurred while loading the profile.");
@@ -44,7 +94,8 @@ async function loadProfile(investorId) {
   }
 }
 
-function populateProfile(investorData) {
+// Функция для заполнения страницы профиля данными инвестора
+function populateProfile(investorData, currentUserId) {
   try {
     console.log("Loading profile for investor:", investorData);
 
@@ -59,7 +110,6 @@ function populateProfile(investorData) {
     document.getElementById("bio").textContent =
       investorData.bio || "Bio not provided";
 
-    // Обработка workHistory (предполагается, что это JSON-строка в базе данных)
     const workHistoryContainer = document.getElementById(
       "work-history-container"
     );
@@ -81,7 +131,6 @@ function populateProfile(investorData) {
       workHistoryContainer.textContent = "No work history provided.";
     }
 
-    // Обработка workExperience (предполагается, что это JSON-строка в базе данных)
     const workExperienceContainer = document.getElementById(
       "work-experience-container"
     );
@@ -103,7 +152,7 @@ function populateProfile(investorData) {
       workExperienceContainer.textContent = "No work experience provided.";
     }
 
-    addChangeProfileIcon(investorData.id);
+    navBar(investorData, currentUserId.id);
 
     hideLoadingIndicator();
   } catch (error) {
@@ -169,6 +218,29 @@ async function logout() {
     window.location.replace("/login");
   } catch (error) {
     handleError("Error during logout:", error);
+  }
+}
+
+// Функция для обновления данных в навигационной панели (navBar)
+async function navBar(profileData, currentUserId) {
+  try {
+    // В данном случае, предполагаем, что в навигационной панели отображается только имя и фамилия текущего пользователя
+    // Если требуется отображать больше данных или данные другого пользователя, измените логику соответственно
+
+    const currentUserData = await loadCurrentUserData();
+
+    document.querySelector(".user-name").textContent = `${
+      currentUserData.name || "N/A"
+    } ${currentUserData.surname || "N/A"}`;
+
+    // Если просматривается свой профиль, добавляем ссылку на редактирование профиля
+    if (profileData.id === currentUserId) {
+      addChangeProfileIcon(profileData.id, currentUserId);
+    }
+  } catch (error) {
+    hideLoadingIndicator();
+    showError("An error occurred while loading the user data.");
+    console.error("Error loading user data:", error);
   }
 }
 
