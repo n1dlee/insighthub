@@ -19,6 +19,14 @@ document.addEventListener("DOMContentLoaded", async () => {
     // Logic specific to the login page (if any)
   }
 
+  const studentList = document.getElementById("student-list");
+  if (studentList) {
+    // Call updateStudentList only when studentList is available
+    updateStudentList(allUsers);
+  } else {
+    console.error("Student list element not found");
+  }
+
   // Attach logout functionality (if applicable on this page)
   const logoutLink = document.querySelector('.dropdown-menu a[href="/logout"]');
   if (logoutLink) {
@@ -57,19 +65,25 @@ function createUserItem(user, majorsData) {
 
   const investment = user.investment ? `$${user.investment}/year` : "N/A";
 
-  // Find the major name using the major ID from the user data
   const major = majorsData.find((major) => major.id === parseInt(user.major));
   const majorName = major ? major.name : "Major not provided";
 
   userItem.innerHTML = `
-    <div class="user-avatar"></div> 
-    <div class="user-details">
-      <a href="profile?id=${user.id}">
-        <h3>${user.name || "N/A"} ${user.surname || "N/A"}</h3>
-      </a> 
-      <p>${user.educationPlace || "N/A"}, ${majorName}, ${investment}</p>
-    </div>
+      <div class="user-avatar"></div> 
+      <div class="user-details">
+          <a href="profile?id=${user.id}">
+              <h3>${user.name || "N/A"} ${user.surname || "N/A"}</h3>
+          </a> 
+          <p>${user.educationPlace || "N/A"}, ${majorName}, ${investment}</p>
+      </div>
+      <div class="brief-info-icon" data-student-id="${user.id}"></div> 
   `;
+
+  // Add click event listener to the brief info icon
+  const briefInfoIcon = userItem.querySelector(".brief-info-icon");
+  briefInfoIcon.addEventListener("click", () => {
+    showStudentPopup(user.id);
+  });
 
   return userItem;
 }
@@ -100,6 +114,60 @@ async function handleProfilePage() {
       // Handle other errors gracefully
       handleError("Error checking authentication or loading profile:", error);
     }
+  }
+}
+
+// Функция для отображения pop-up окна
+async function showStudentPopup(studentId) {
+  try {
+    showLoadingIndicator();
+
+    const response = await fetch(`/api/user/${studentId}`);
+    if (!response.ok) {
+      throw new Error(
+        "Failed to fetch student data. Status: " + response.status
+      );
+    }
+    const studentData = await response.json();
+
+    // Заполняем pop-up данными студента
+    document.getElementById(
+      "popup-student-name"
+    ).textContent = `${studentData.name} ${studentData.surname}`;
+    document.getElementById("popup-student-email").textContent =
+      studentData.email;
+
+    // Устанавливаем изображение профиля (с обработкой ошибок)
+    const popupAvatar = document.querySelector(".student-popup-avatar");
+    const imageUrl = `/assets/uploads/${studentData.id}/image.png`;
+    popupAvatar.style.backgroundImage = `url(${imageUrl})`;
+
+    popupAvatar.onerror = function () {
+      popupAvatar.style.backgroundImage = "none"; // Сброс фона, если изображение не загрузилось
+      popupAvatar.style.backgroundColor = "#ccc"; // Возврат к цвету по умолчанию
+      console.error("Failed to load profile image. Using default.");
+    };
+
+    hideLoadingIndicator();
+
+    // Показываем pop-up
+    document.getElementById("student-popup").style.display = "block";
+
+    // Добавляем обработчик события для закрытия pop-up при клике на крестик или вне области содержимого
+    const closePopup = document.querySelector(".close-popup");
+    const popup = document.getElementById("student-popup");
+    closePopup.onclick = function () {
+      popup.style.display = "none";
+    };
+    window.onclick = function (event) {
+      if (event.target == popup) {
+        popup.style.display = "none";
+      }
+    };
+  } catch (error) {
+    hideLoadingIndicator();
+    showError("An error occurred while loading student data for the popup.");
+    console.error("Error loading student data:", error);
   }
 }
 
@@ -192,6 +260,15 @@ function populateProfile(profileData) {
   } else {
     achievementsList.textContent = "No achievements found";
   }
+}
+
+function addBriefInfoIcon(studentContainer) {
+  const img = document.createElement("img");
+  img.src = "assets/icons/brief-info.png"; // Путь к вашему изображению
+  img.alt = "Brief Info"; // Альтернативный текст для изображения
+  img.classList.add("brief-info-icon"); // Добавьте класс для стилизации, если нужно
+
+  studentContainer.appendChild(img);
 }
 
 function logout() {
@@ -361,6 +438,8 @@ async function updateStudentList(filteredUsers) {
 
   filteredUsers.forEach((user) => {
     const userItem = createUserItem(user, majorsData);
+    addBriefInfoIcon(userItem);
+
     studentList.appendChild(userItem);
   });
 }
@@ -368,15 +447,42 @@ async function updateStudentList(filteredUsers) {
 function showLoadingIndicator() {
   const loadingContainer = document.getElementById("loading-indicator");
   const formElements = document.querySelectorAll("form input, form select");
-  formElements.forEach((el) => (el.disabled = true)); // Disable form elements
-  if (loadingContainer) loadingContainer.style.display = "block";
+  formElements.forEach((el) => (el.disabled = true));
+
+  if (loadingContainer) {
+    loadingContainer.style.opacity = 0;
+    loadingContainer.style.display = "block";
+
+    requestAnimationFrame(function fadeIn() {
+      let opacity = parseFloat(loadingContainer.style.opacity);
+      opacity += 0.1;
+      loadingContainer.style.opacity = opacity;
+
+      if (opacity < 1) {
+        requestAnimationFrame(fadeIn);
+      }
+    });
+  }
 }
 
 function hideLoadingIndicator() {
   const loadingContainer = document.getElementById("loading-indicator");
   const formElements = document.querySelectorAll("form input, form select");
-  formElements.forEach((el) => (el.disabled = false)); // Enable form elements
-  if (loadingContainer) loadingContainer.style.display = "none";
+  formElements.forEach((el) => (el.disabled = false));
+
+  if (loadingContainer) {
+    requestAnimationFrame(function fadeOut() {
+      let opacity = parseFloat(loadingContainer.style.opacity);
+      opacity -= 0.1;
+      loadingContainer.style.opacity = opacity;
+
+      if (opacity > 0) {
+        requestAnimationFrame(fadeOut);
+      } else {
+        loadingContainer.style.display = "none";
+      }
+    });
+  }
 }
 
 function showError(message) {

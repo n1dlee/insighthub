@@ -36,45 +36,55 @@
       </div>
     </header>
 
-    <div class="main-container">
-      <aside class="sidebar">
-        <div class="filter-group">
-          <label for="university">University</label>
-          <select id="university">
-            <option>University</option>
-          </select>
-        </div>
-        <div class="filter-group">
-          <label for="major">Major</label>
-          <select id="major">
-            <option>Major</option>
-          </select>
-        </div>
-        <div class="filter-group">
-          <label for="investment">Investment ($/year)</label>
-          <select id="investment" name="investment">
-            <option value="Investment">Investment Value</option>
-            <option value="0-1000$">0$-1000$</option>
-            <option value="1000$-5000$">1000$-5000$</option>
-            <option value="5000$-10000$">5000$-10000$</option>
-            <option value="10000$-20000$">10000$-20000$</option>
-            <option value="20000$-30000$">20000$-30000$</option>
-            <option value="30000$-50000$">30000$-50000$</option>
-            <option value="50000$-80000$">50000$-80000$</option>
-          </select>
-        </div>
-      </aside>
+    <main>
+      <div class="main-container">
+        <aside class="sidebar">
+          <div class="filter-group">
+            <label for="university">University</label>
+            <select id="university">
+              <option>University</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label for="major">Major</label>
+            <select id="major">
+              <option>Major</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label for="investment">Investment ($/year)</label>
+            <select id="investment" name="investment">
+              <option value="Investment">Investment Value</option>
+              <option value="0-1000$">0$-1000$</option>
+              <option value="1000$-5000$">1000$-5000$</option>
+              <option value="5000$-10000$">5000$-10000$</option>
+              <option value="10000$-20000$">10000$-20000$</option>
+              <option value="20000$-30000$">20000$-30000$</option>
+              <option value="30000$-50000$">30000$-50000$</option>
+              <option value="50000$-80000$">50000$-80000$</option>
+            </select>
+          </div>
+        </aside>
 
-      <section class="student-list" id="student-list">
-        <div id="loading-indicator" style="display: none">
-          <div class="spinner"></div>
-          Loading...
+        <section class="student-list" id="student-list">
+          <div id="loading-indicator" style="display: none">
+            <div class="spinner"></div>
+            Loading...
+          </div>
+        </section>
+
+        <div id="student-popup" class="popup" style="display: none">
+          <div class="popup-content">
+            <span class="close-popup">&times;</span>
+            <div class="student-popup-avatar"></div>
+            <h3 id="popup-student-name"></h3>
+            <p id="popup-student-email"></p>
+          </div>
         </div>
-      </section>
 
-      <div id="error-message" style="display: none; color: red"></div>
-    </div>
-
+        <div id="error-message" style="display: none; color: red"></div>
+      </div>
+    </main>
     <script src="assets/js/investor-main.js"></script>
   </body>
 </html>
