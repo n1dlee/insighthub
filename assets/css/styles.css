@@ -12,17 +12,37 @@ body {
   font-family: "Poppins", sans-serif;
   background-image: url("../icons/background.png");
   background-size: cover;
-  background-position: center 210px; /* Изменено */
+  background-position: center 210px;
   line-height: 1.6;
   color: #12181e;
   margin: 0;
   padding: 0;
+}
+
+/* Header styling */
+#header_1 {
+  position: fixed;
+  top: 0;
+  width: 100%;
+  z-index: 1000;
+}
+
+#fullpage {
+  padding-top: 150px;
+}
+
+.section {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
   justify-content: center;
-  align-items: flex; /* Выравниваем по верхнему краю */
+  align-items: center;
+  padding-top: 150px;
 }
 
 .container {
-  width: 90%;
+  max-height: 100vh;
+  width: 100%;
   max-width: 1200px;
   margin: 0 auto;
   padding: 30px 0;
@@ -31,7 +51,7 @@ body {
 .hero .container,
 .mission .container,
 .team .container {
-  margin-left: 200px; /* Отрицательный отступ для контейнеров секций */
+  margin-left: 200px;
 }
 
 .hcontainer {
@@ -140,8 +160,8 @@ header .btn-signin:hover {
 .hero {
   padding: 50px 0;
   text-align: left;
-  position: relative; /* для позиционирования псевдоэлемента */
-  overflow: hidden; /* чтобы скрыть лишние части псевдоэлемента */
+  position: relative;
+  overflow: hidden;
 }
 
 .hero .container {
@@ -253,6 +273,11 @@ header .btn-signin:hover {
   text-align: justify;
 }
 
+.mission,
+.team {
+  padding-top: 150px;
+}
+
 /* Team Section Styles */
 .team {
   padding: 10px 0;
@@ -316,7 +341,7 @@ header .btn-signin:hover {
 }
 
 .team-member h3 {
-  font-size: 20px;
+  font-size: 24px;
   margin-bottom: 10px;
 }
 
@@ -327,20 +352,20 @@ header .btn-signin:hover {
 
 /* А тут код для footer.html */
 .footer_color {
-  background-color: #cef9ca;
+  background-color: #c8ffc2;
 }
 
 footer {
-  background-color: #cef9ca;
-  padding: 10px 0; /* Отступы сверху и снизу */
+  background-color: #c9ffc3;
+  padding: 40px 0;
   text-align: left;
   color: black;
 }
 
 .contact-info {
   display: flex;
-  justify-content: space-between; /* Равномерно распределяем колонки */
-  flex-direction: column; /* Располагаем колонки вертикально */
+  justify-content: space-between;
+  flex-direction: column;
 }
 
 .contact-container {
@@ -350,15 +375,16 @@ footer {
 }
 
 .contact-heading {
-  font-size: 42px;
+  font-size: 48px;
   font-family: "Playfair Display", serif;
   font-weight: bold;
 }
 
 .contact-line {
-  width: 48px;
-  height: 3px;
-  background-color: #28ac22; /* Зеленый цвет линии */
+  width: 60px;
+  height: 4px;
+  background-color: #28ac22;
+  margin-bottom: 20px;
 }
 
 .contact-columns {
@@ -376,23 +402,28 @@ footer {
 }
 
 .contact-column h3 {
-  margin-bottom: 10px;
-  font-size: 32px;
+  margin-bottom: 20px;
+  font-size: 36px;
+}
+
+.contact-column p {
+  font-size: 17px;
 }
 
 .social-links {
   display: flex;
   align-items: left; /* Выравниваем иконки по центру вертикали */
   flex-direction: column;
+  gap: 20px;
 }
 
 .social-links a {
-  margin-right: 10px;
+  margin-right: 0;
 }
 
 .social-links img {
-  width: 24px;
-  height: 24px;
+  width: 32px;
+  height: 32px;
 }
 
 .btn_up {
@@ -401,6 +432,7 @@ footer {
   width: 80px;
   height: 80px;
   right: 10%;
+  background-size: contain;
 }
 
 /* Логинимся нахуй */
