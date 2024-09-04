@@ -61,8 +61,15 @@ function createUserItem(user, majorsData) {
   const major = majorsData.find((major) => major.id === parseInt(user.major));
   const majorName = major ? major.name : "Major not provided";
 
+  // Construct the path to the user's image
+  const userImageSrc = `assets/uploads/${user.id}/image.png`;
+
   userItem.innerHTML = `
-    <div class="user-avatar"></div> 
+    <div class="user-avatar">
+      <img src="${userImageSrc}" alt="${
+    user.name || "User"
+  }'s avatar" onerror="this.src='assets/icons/default-avatar.png';">
+    </div> 
     <div class="user-details">
       <a href="profile?id=${user.id}">
         <h3>${user.name || "N/A"} ${user.surname || "N/A"}</h3>

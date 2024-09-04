@@ -96,25 +96,20 @@ async function populateProfile(profileData, currentUserId, majorsData) {
   try {
     console.log("Loading profile for user:", profileData);
 
-    // Update student name and surname
     const studentNameElement = document.getElementById("student-name");
     studentNameElement.textContent = `${profileData.name || "N/A"} ${
       profileData.surname || "N/A"
     }`;
 
-    // Update location
     document.getElementById("student-location").textContent =
       profileData.location || "Location not provided";
 
-    // Update bio
     document.getElementById("student-bio").textContent =
       profileData.bio || "Bio not provided";
 
-    // Update education
     document.getElementById("student-education").textContent =
       profileData.educationPlace || "Education not provided";
 
-    // Убедитесь, что majorsData является массивом
     const majorsArray = Array.isArray(majorsData) ? majorsData : [];
 
     if (majorsArray.length === 0) {
@@ -123,18 +118,14 @@ async function populateProfile(profileData, currentUserId, majorsData) {
       );
     }
 
-    // Найдите название major по ID major'а в profileData
     const major = majorsArray.find(
       (major) => major.id === parseInt(profileData.major)
     );
 
-    // Если major найден, используем его название, если нет, указываем "Major not provided"
     const majorName = major ? major.name : "Major not provided";
 
-    // Обновите поле major на странице
     document.getElementById("student-major").textContent = majorName;
 
-    // Update statistics (GPA, SAT, IELTS)
     document.getElementById("student-gpa").textContent =
       profileData.gpa || "N/A";
     document.getElementById("student-sat").textContent =
@@ -142,14 +133,11 @@ async function populateProfile(profileData, currentUserId, majorsData) {
     document.getElementById("student-ielts").textContent =
       profileData.ielts || "N/A";
 
-    // Добавляем иконку изменения профиля, если это профиль текущего пользователя
     addChangeProfileIcon(profileData.id, currentUserId);
 
-    // Update achievements
     document.getElementById("student-achievements").textContent =
       profileData.achievements || "Achievements not provided";
 
-    // Update profile image
     const profileImage = document.getElementById("profile-image");
     const imageUrl = `/assets/uploads/${profileData.id}/image.png`; // Construct the image URL
     profileImage.src = imageUrl;
@@ -157,6 +145,8 @@ async function populateProfile(profileData, currentUserId, majorsData) {
     profileImage.onerror = function () {
       profileImage.src = "assets/icons/default-image.png"; // Fall back to a default image
     };
+
+    profileImage.classList.add("user-avatar-img");
 
     hideLoadingIndicator();
   } catch (error) {

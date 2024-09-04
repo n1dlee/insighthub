@@ -1133,7 +1133,7 @@ input[type="checkbox"] {
   border-radius: 50%;
   overflow: hidden;
   cursor: pointer;
-  background-color: #d0d8da; /* Light gray background for user profile */
+  background-color: #d0d8da;
 }
 
 .user-profile img {
@@ -1255,18 +1255,29 @@ input[type="checkbox"] {
 }
 
 .user-avatar {
-  width: 40px; /* Adjust size as needed */
-  height: 40px;
-  border-radius: 50%; /* Make it circular */
-  background-color: #ccc; /* Placeholder background color */
-  margin-right: 10px; /* Add some space between avatar and text */
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background-color: #ccc;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 15px;
+}
+
+.user-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center;
 }
 
 .user-details a {
   text-decoration: none;
   color: inherit;
-  display: flex; /* Make the link take up the full width of the user-details container */
-  flex-direction: column; /* Arrange the name and details vertically */
+  display: flex;
+  flex-direction: column;
 }
 
 .student-entry {
@@ -1454,6 +1465,13 @@ input[type="checkbox"] {
   object-fit: contain;
   object-position: center;
   width: 100%;
+}
+
+.profile-image-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center;
 }
 
 .education-info {
