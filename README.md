@@ -21,7 +21,7 @@ InsightHub is a web platform that connects students seeking financial support fo
 1. **Clone the repository:**
 
    ```bash
-   git clone https://github.com/Nodik2006/insighthub
+   git clone https://github.com/n1dlee/insighthub
 
    ```
 
