@@ -66,11 +66,10 @@ function createUserItem(user, majorsData) {
 
   userItem.innerHTML = `
     <div class="user-avatar">
-      <img src="${userImageSrc}" alt="${
-    user.name || "User"
-  }'s avatar" onerror="this.src='assets/icons/default-avatar.png';">
+      <img src="${userImageSrc}" alt="${user.name || "User"}'s avatar" onerror="this.src='assets/icons/default-avatar.png';">
     </div> 
     <div class="user-details">
+      <button class="info-button" style="float: left;">Show Info</button> <!-- Moved button to the left -->
       <a href="profile?id=${user.id}">
         <h3>${user.name || "N/A"} ${user.surname || "N/A"}</h3>
       </a> 
@@ -78,8 +77,85 @@ function createUserItem(user, majorsData) {
     </div>
   `;
 
+  // Add event listener to the button
+  const infoButton = userItem.querySelector(".info-button");
+  infoButton.style.backgroundColor = "#4CAF50";
+  infoButton.style.color = "#fff";
+  infoButton.style.padding = "10px 20px";
+  infoButton.style.fontSize = "16px";
+  infoButton.style.cursor = "pointer";
+  infoButton.style.position = "absolute";
+  infoButton.style.border = "none";
+  infoButton.style.borderRadius = "25px";
+
+  infoButton.style.top = "25%";
+  infoButton.style.right = "15px";
+
+  infoButton.addEventListener("click", () => {
+    // Create a popup container
+    const popupContainer = document.createElement("div");
+    popupContainer.classList.add("popup-container");
+    popupContainer.style.position = "fixed";
+    popupContainer.style.top = "50%";
+    popupContainer.style.left = "50%";
+    popupContainer.style.transform = "translate(-50%, -50%)";
+    popupContainer.style.width = "300px";
+    popupContainer.style.height = "400px";
+    popupContainer.style.background = "white";
+    popupContainer.style.borderRadius = "10px";
+    popupContainer.style.padding = "20px";
+    popupContainer.style.boxShadow = "0px 0px 10px rgba(0,0,0,0.5)";
+    popupContainer.style.zIndex = "1000";
+
+    // Create an overlay element
+    const overlay = document.createElement("div");
+    overlay.classList.add("overlay");
+    overlay.style.position = "fixed";
+    overlay.style.top = "0";
+    overlay.style.left = "0";
+    overlay.style.width = "100%";
+    overlay.style.height = "100%";
+    overlay.style.background = "rgba(0, 0, 0, 0.5)";
+    overlay.style.zIndex = "999";
+
+    // Add the overlay to the body
+    document.body.appendChild(overlay);
+
+    // Add content to the popup
+    const popupContent = `
+      <img src="${userImageSrc}" alt="${user.name || "User"}'s avatar" onerror="this.src='assets/icons/default-avatar.png';" style="width: 100px; height: 100px; border-radius: 50%; margin-bottom: 40px; display: block; margin: 0 auto;">
+      <h2 style="margin-top: 20px;">${user.name || "N/A"} ${user.surname || "N/A"} </h2>
+      <p>Education Place: ${user.educationPlace || "N/A"}</p>
+      <p>Major: ${majorName}</p>
+      <p>Investment: ${investment}</p>
+    `;
+    popupContainer.innerHTML = popupContent;  
+
+
+    
+    // Add a close button to the popup
+    const closeButton = document.createElement("button");
+    closeButton.textContent = "X";
+    closeButton.style.fontWeight = "900";
+    closeButton.style.fontSize = "20px";
+    closeButton.style.position = "absolute";
+    closeButton.style.border = "none";
+    closeButton.style.backgroundColor = "white";
+    closeButton.style.top = "10px";
+    closeButton.style.right = "10px";
+    closeButton.addEventListener("click", () => {
+      popupContainer.remove();
+      overlay.remove();
+    });
+    popupContainer.appendChild(closeButton);
+
+    // Add the popup to the body
+    document.body.appendChild(popupContainer);
+  });
+
   return userItem;
 }
+
 
 function getMajorName(majorId, majorsData) {
   const major = majorsData.find((major) => major.id === majorId);
