@@ -8,30 +8,38 @@ document.addEventListener("DOMContentLoaded", async () => {
     populateDropdown("major", allMajors);
     loadUsers();
     loadUniversities();
-    loadMajors();
+
+    // Вызываем updateIconBar после загрузки всех данных
+    await updateIconBar();
+
+    // Остальной код...
+    if (window.location.pathname === "/profile") {
+      handleProfilePage();
+    } else if (window.location.pathname === "/login") {
+      // Logic specific to the login page (if any)
+    }
+
+    // Attach logout functionality (if applicable on this page)
+    const logoutLink = document.querySelector(
+      '.dropdown-menu a[href="/logout"]'
+    );
+    if (logoutLink) {
+      logoutLink.addEventListener("click", (event) => {
+        event.preventDefault();
+        logout();
+      });
+    }
+
+    if (universitySelect && majorSelect && investmentSelect) {
+      universitySelect.addEventListener("change", applyFilters);
+      majorSelect.addEventListener("change", applyFilters);
+      investmentSelect.addEventListener("change", applyFilters);
+    }
   } catch (error) {
-    showError(error.message);
-  }
-  // Check if on the profile page and handle authentication
-  if (window.location.pathname === "/profile") {
-    handleProfilePage();
-  } else if (window.location.pathname === "/login") {
-    // Logic specific to the login page (if any)
-  }
-
-  // Attach logout functionality (if applicable on this page)
-  const logoutLink = document.querySelector('.dropdown-menu a[href="/logout"]');
-  if (logoutLink) {
-    logoutLink.addEventListener("click", (event) => {
-      event.preventDefault();
-      logout();
-    });
-  }
-
-  if (universitySelect && majorSelect && investmentSelect) {
-    universitySelect.addEventListener("change", applyFilters);
-    majorSelect.addEventListener("change", applyFilters);
-    investmentSelect.addEventListener("change", applyFilters);
+    console.error("Error during page initialization:", error);
+    showError(
+      "An error occurred while loading the page. Please try refreshing."
+    );
   }
 });
 
@@ -66,7 +74,9 @@ function createUserItem(user, majorsData) {
 
   userItem.innerHTML = `
     <div class="user-avatar">
-      <img src="${userImageSrc}" alt="${user.name || "User"}'s avatar" onerror="this.src='assets/icons/default-avatar.png';">
+      <img src="${userImageSrc}" alt="${
+    user.name || "User"
+  }'s avatar" onerror="this.src='assets/icons/default-avatar.png';">
     </div> 
     <div class="user-details">
       <button class="info-button" style="float: left;">Show Info</button> <!-- Moved button to the left -->
@@ -123,16 +133,18 @@ function createUserItem(user, majorsData) {
 
     // Add content to the popup
     const popupContent = `
-      <img src="${userImageSrc}" alt="${user.name || "User"}'s avatar" onerror="this.src='assets/icons/default-avatar.png';" style="width: 100px; height: 100px; border-radius: 50%; margin-bottom: 40px; display: block; margin: 0 auto;">
-      <h2 style="margin-top: 20px;">${user.name || "N/A"} ${user.surname || "N/A"} </h2>
+      <img src="${userImageSrc}" alt="${
+      user.name || "User"
+    }'s avatar" onerror="this.src='assets/icons/default-avatar.png';" style="width: 100px; height: 100px; border-radius: 50%; margin-bottom: 40px; display: block; margin: 0 auto;">
+      <h2 style="margin-top: 20px;">${user.name || "N/A"} ${
+      user.surname || "N/A"
+    } </h2>
       <p>Education Place: ${user.educationPlace || "N/A"}</p>
       <p>Major: ${majorName}</p>
       <p>Investment: ${investment}</p>
     `;
-    popupContainer.innerHTML = popupContent;  
+    popupContainer.innerHTML = popupContent;
 
-
-    
     // Add a close button to the popup
     const closeButton = document.createElement("button");
     closeButton.textContent = "X";
@@ -156,7 +168,6 @@ function createUserItem(user, majorsData) {
   return userItem;
 }
 
-
 function getMajorName(majorId, majorsData) {
   const major = majorsData.find((major) => major.id === majorId);
   return major ? major.name : "Major not provided";
@@ -165,23 +176,19 @@ function getMajorName(majorId, majorsData) {
 async function handleProfilePage() {
   try {
     const userData = await loadCurrentUserData();
-    updateIconBar(userData);
-    navBar(profileData);
+    updateIconBar();
 
     const urlParams = new URLSearchParams(window.location.search);
     const userId = urlParams.get("id");
 
-    // Prioritize user ID from URL, fallback to authenticated user if none provided
     const profileIdToLoad = userId || userData.id;
 
     loadProfile(profileIdToLoad, userData);
   } catch (error) {
     if (error.message === "Unauthorized. Please log in.") {
-      // Handle unauthorized access specifically (e.g., redirect to login)
       window.location.replace("/login-student");
     } else {
-      // Handle other errors gracefully
-      handleError("Error checking authentication or loading profile:", error);
+      handleError("Error checking authentication or loading profile:")(error);
     }
   }
 }
@@ -290,57 +297,77 @@ function logout() {
 }
 
 async function updateIconBar() {
-  const userNameSpan = document.getElementById("navbar-user-name");
+  const userProfileWrapper = document.querySelector(".user-profile-wrapper");
+  const userNameElement = document.getElementById("loading-student-name");
+
   try {
-    // Display a loading message while fetching data
-    userNameSpan.textContent = "Loading user...";
-
-    const userData = await loadCurrentUserData(); // Corrected call
-
-    const userProfile = document.querySelector(".user-profile");
-
-    // Set profile image (with error handling)
-    let profileImage = userProfile.querySelector("img");
-    if (!profileImage) {
-      profileImage = new Image();
-      profileImage.alt = "User Profile";
-      userProfile.appendChild(profileImage);
+    if (userNameElement) {
+      userNameElement.textContent = "Loading...";
     }
 
-    profileImage.src =
-      userData.profileImage || "assets/icons/default-avatar.png";
-    profileImage.onerror = () => {
-      profileImage.src = "assets/icons/default-avatar.png"; // Fallback if image fails to load
-      console.error("Failed to load profile image. Using default.");
-    };
+    const userData = await loadCurrentUserData();
 
-    // Update user name using template literals
-    userNameSpan.textContent = `${userData.name || "N/A"} ${
-      userData.surname || "N/A"
-    }`;
+    if (userProfileWrapper) {
+      const profileImage =
+        userProfileWrapper.querySelector(".user-profile img");
+      if (profileImage && userData.id) {
+        // Используем правильный путь к изображению пользователя
+        const userImageSrc = `assets/uploads/${userData.id}/image.png`;
+        profileImage.src = userImageSrc;
 
-    // Update profile link
-    if (userData && userData.id) {
-      const profileLink = document.querySelector('a[href="/profile"]');
-      if (profileLink) {
-        profileLink.href = `/profile?id=${userData.id}`;
+        profileImage.onerror = () => {
+          console.error("Failed to load user profile image. Using default.");
+          profileImage.src = "assets/icons/default-image.png";
+        };
       }
+    }
+
+    if (userNameElement && userData) {
+      // Отображаем полное имя и фамилию пользователя
+      userNameElement.textContent =
+        `${userData.name || ""} ${userData.surname || ""}`.trim() || "N/A";
+    }
+
+    const profileLink = document.querySelector('a[href="/profile"]');
+    if (profileLink && userData && userData.id) {
+      profileLink.href = `/profile?id=${userData.id}`;
+      profileLink.addEventListener("click", (event) => {
+        event.preventDefault();
+        navigateToProfile(userData.id);
+      });
     }
   } catch (error) {
     console.error("Error fetching user details:", error);
-    userNameSpan.textContent = "Error loading user data";
+    if (userNameElement) {
+      userNameElement.textContent = "Error loading user data";
+    }
   }
 }
 
-async function navBar(profileData, currentUserId) {
-  try {
-    document.getElementById("loading-student-name").textContent = `${
-      profileData.name || "N/A"
-    } ${profileData.surname || "N/A"}`;
-  } catch (error) {
-    hideLoadingIndicator();
-    showError("An error occurred while loading the profile.");
-    console.error("Error loading profile data:", error);
+// Function to handle navigation to the profile page
+function navigateToProfile(userId) {
+  if (userId) {
+    window.location.href = `/profile?id=${userId}`;
+  } else {
+    console.error("User ID is missing. Unable to navigate to profile.");
+  }
+}
+
+function navBar(userData) {
+  const navbarUserName = document.getElementById("navbar-user-name");
+  if (navbarUserName && userData) {
+    navbarUserName.textContent = `${userData.name || "N/A"} ${
+      userData.surname || "N/A"
+    }`;
+  }
+
+  const profileLink = document.querySelector('a[href="/profile"]');
+  if (profileLink && userData && userData.id) {
+    profileLink.href = `/profile?id=${userData.id}`;
+    profileLink.addEventListener("click", (event) => {
+      event.preventDefault();
+      navigateToProfile(userData.id);
+    });
   }
 }
 
