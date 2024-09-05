@@ -8,6 +8,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   try {
+    navBar();
     const currentUserData = await loadCurrentUserData();
 
     const logoutLink = document.querySelector(
@@ -34,31 +35,19 @@ async function loadCurrentUserData() {
     });
 
     if (!response.ok) {
-      const errorText = await response.text();
-      console.error(
-        "Error response from /api/auth-student:",
-        response.status,
-        errorText
-      );
-
-      if (response.status === 401) {
-        throw new Error("Unauthorized. Please log in.");
-      } else {
-        throw new Error(
-          `Network response was not ok. Status: ${response.status}. Server message: ${errorText}`
-        );
-      }
+      throw new Error(`HTTP error! Status: ${response.status}`);
     }
 
-    const currentUserData = await response.json();
-    if (!currentUserData || !currentUserData.id) {
-      console.error("Invalid user data received from server:", currentUserData);
-      throw new Error("No user data or ID found.");
+    const data = await response.json();
+    console.log("Loaded user data:", data);
+
+    if (!data || !data.id) {
+      throw new Error("Invalid user data received from server");
     }
 
-    return currentUserData;
+    return data;
   } catch (error) {
-    console.error("Error checking authentication:", error);
+    console.error("Error in loadCurrentUserData:", error);
     throw error;
   }
 }
@@ -79,6 +68,8 @@ async function loadProfile(profileUserId, currentUserData) {
       }
       profileData = await response.json();
     }
+
+    addChangeProfileIcon(profileUserId, currentUserData.id);
 
     // Fetch majors data and await its resolution
     const majorsData = await loadMajors();
@@ -156,26 +147,51 @@ async function populateProfile(profileData, currentUserId, majorsData) {
   }
 }
 
-// Функция для обновления данных в навигационной панели (navBar)
-async function navBar(profileData, currentUserId) {
+async function navBar() {
+  const userProfileWrapper = document.querySelector(".user-profile-wrapper");
+  const userNameElement = document.getElementById("loading-student-name");
+
   try {
-    // В данном случае, предполагаем, что в навигационной панели отображается только имя и фамилия текущего пользователя
-    // Если требуется отображать больше данных или данные другого пользователя, измените логику соответственно
+    if (userNameElement) {
+      userNameElement.textContent = "Loading...";
+    }
 
-    const currentUserData = await loadCurrentUserData();
+    const userData = await loadCurrentUserData();
 
-    document.querySelector(".user-name").textContent = `${
-      currentUserData.name || "N/A"
-    } ${currentUserData.surname || "N/A"}`;
+    if (userProfileWrapper) {
+      const profileImage =
+        userProfileWrapper.querySelector(".user-profile img");
+      if (profileImage && userData.id) {
+        const userImageSrc = `assets/uploads/${userData.id}/image.png`;
+        profileImage.src = userImageSrc;
 
-    // Если просматривается свой профиль, добавляем ссылку на редактирование профиля
-    if (profileData.id === currentUserId) {
-      addChangeProfileIcon(profileData.id, currentUserId);
+        profileImage.onerror = () => {
+          console.error("Failed to load user profile image. Using default.");
+          profileImage.src = "assets/icons/default-image.png";
+        };
+      }
+    }
+
+    if (userNameElement && userData) {
+      userNameElement.textContent =
+        `${userData.name || ""} ${userData.surname || ""}`.trim() || "N/A";
+    }
+
+    const profileLink = document.querySelector(
+      '.dropdown-menu a[href^="/profile"]'
+    );
+    if (profileLink && userData.id) {
+      profileLink.href = `/profile?id=${userData.id}`;
+      console.log("Profile link updated");
+    } else {
+      console.log("Profile link element not found or user ID is missing");
     }
   } catch (error) {
-    hideLoadingIndicator();
-    showError("An error occurred while loading the user data.");
-    console.error("Error loading user data:", error);
+    console.error("Error updating navbar:", error);
+    const userNameElement = document.querySelector(".dropdown-menu h2");
+    if (userNameElement) {
+      userNameElement.textContent = "Error loading user data";
+    }
   }
 }
 
@@ -183,16 +199,21 @@ function addChangeProfileIcon(profileDataId, currentUserId) {
   const studentNameElement = document.getElementById("student-name");
 
   if (profileDataId === currentUserId && studentNameElement) {
-    const changeProfileLink = document.createElement("a");
-    changeProfileLink.href = `/profile-change?id=${profileDataId}`;
+    const existingIcon = studentNameElement.querySelector(
+      ".change-profile-icon"
+    );
+    if (!existingIcon) {
+      const changeProfileLink = document.createElement("a");
+      changeProfileLink.href = `/profile-change?id=${profileDataId}`;
 
-    const changeProfileIcon = document.createElement("img");
-    changeProfileIcon.src = "assets/icons/change-profile.png";
-    changeProfileIcon.alt = "Change Profile";
-    changeProfileIcon.className = "change-profile-icon";
+      const changeProfileIcon = document.createElement("img");
+      changeProfileIcon.src = "assets/icons/change-profile.png";
+      changeProfileIcon.alt = "Change Profile";
+      changeProfileIcon.className = "change-profile-icon";
 
-    changeProfileLink.appendChild(changeProfileIcon);
-    studentNameElement.appendChild(changeProfileLink);
+      changeProfileLink.appendChild(changeProfileIcon);
+      studentNameElement.appendChild(changeProfileLink);
+    }
   }
 }
 

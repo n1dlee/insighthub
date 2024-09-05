@@ -311,7 +311,6 @@ async function updateIconBar() {
       const profileImage =
         userProfileWrapper.querySelector(".user-profile img");
       if (profileImage && userData.id) {
-        // Используем правильный путь к изображению пользователя
         const userImageSrc = `assets/uploads/${userData.id}/image.png`;
         profileImage.src = userImageSrc;
 
@@ -323,7 +322,6 @@ async function updateIconBar() {
     }
 
     if (userNameElement && userData) {
-      // Отображаем полное имя и фамилию пользователя
       userNameElement.textContent =
         `${userData.name || ""} ${userData.surname || ""}`.trim() || "N/A";
     }
