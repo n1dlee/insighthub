@@ -1790,3 +1790,313 @@ input[type="checkbox"] {
     margin-right: 0;
   }
 }
+
+/* Базовые стили остаются без изменений */
+
+/* Медиа-запросы */
+/* Для больших десктопов */
+@media (min-width: 1200px) {
+  .container {
+    max-width: 1140px;
+  }
+}
+
+/* Для средних десктопов */
+@media (max-width: 1199px) and (min-width: 992px) {
+  .container {
+    max-width: 960px;
+  }
+
+  header h1 {
+    font-size: 3.5vw;
+  }
+}
+
+/* Для планшетов */
+@media (max-width: 991px) and (min-width: 768px) {
+  .container {
+    max-width: 720px;
+  }
+
+  header h1 {
+    font-size: 4vw;
+  }
+
+  .nav-container ul li a {
+    font-size: clamp(14px, 1.8vw, 24px);
+  }
+
+  .hero .container,
+  .mission .container,
+  .team .container {
+    margin-left: 5%;
+  }
+
+  .hero-content {
+    flex-direction: column;
+  }
+
+  .mission-content {
+    flex-direction: column;
+  }
+
+  .mission-content img {
+    max-width: 80%;
+    margin: 0 auto;
+  }
+}
+
+/* Для больших мобильных устройств */
+@media (max-width: 767px) and (min-width: 576px) {
+  .container {
+    max-width: 540px;
+  }
+
+  .hcontainer {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  header h1 {
+    font-size: 6vw;
+  }
+
+  .logo-container,
+  .nav-container {
+    margin: 10px 0;
+  }
+
+  .nav-container ul {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .nav-container ul li {
+    margin: 10px 0;
+  }
+
+  .hero .container,
+  .mission .container,
+  .team .container {
+    margin-left: 0;
+  }
+
+  .hero-content,
+  .mission-content {
+    flex-direction: column;
+  }
+
+  .hero-image img,
+  .mission-content img {
+    max-width: 100%;
+  }
+
+  .team-members {
+    gap: 20px;
+  }
+
+  .team-member {
+    width: 45%;
+  }
+}
+
+/* Базовые стили остаются без изменений */
+
+/* Медиа-запросы */
+/* Для мобильных устройств */
+@media (max-width: 576px) {
+  header {
+    padding: 10px;
+  }
+
+  header h1 {
+    font-size: 6vw;
+  }
+
+  .nav-container ul li a {
+    font-size: 16px;
+  }
+
+  .btn-signin {
+    font-size: 16px;
+    padding: 8px 15px;
+  }
+
+  .hero h2 {
+    font-size: 32px;
+    line-height: 1.2;
+  }
+
+  .hero p {
+    font-size: 18px;
+  }
+
+  .hero-buttons a {
+    font-size: 16px;
+    padding: 8px 20px;
+  }
+
+  .mission h2,
+  .team h2 {
+    font-size: 28px;
+  }
+
+  .mission-content p {
+    font-size: 16px;
+  }
+
+  .team-member {
+    width: 100%;
+  }
+}
+
+/* Для планшетов */
+@media (min-width: 577px) and (max-width: 768px) {
+  .hcontainer {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .logo-container,
+  .nav-container {
+    margin: 10px 0;
+  }
+
+  header h1 {
+    font-size: 48px;
+  }
+
+  .nav-container ul li a {
+    font-size: 20px;
+  }
+
+  .hero .container,
+  .mission .container,
+  .team .container {
+    margin-left: 5%;
+    margin-right: 5%;
+  }
+
+  .hero-content {
+    flex-direction: column;
+  }
+
+  .hero-image img {
+    max-width: 80%;
+    margin: 0 auto;
+  }
+
+  .mission-content {
+    flex-direction: column;
+  }
+
+  .mission-content img {
+    max-width: 80%;
+    margin: 0 auto 20px;
+  }
+
+  .team-members {
+    gap: 40px;
+  }
+
+  .team-member {
+    width: 45%;
+  }
+}
+
+/* Для небольших десктопов и больших планшетов */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .hero .container,
+  .mission .container,
+  .team .container {
+    margin-left: 10%;
+    margin-right: 10%;
+  }
+
+  .hero-content {
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .hero-image img {
+    max-width: 90%;
+  }
+
+  .mission-content {
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .mission-content img {
+    max-width: 45%;
+  }
+
+  .team-members {
+    gap: 30px;
+  }
+
+  .team-member {
+    width: 30%;
+  }
+}
+
+/* Для больших экранов */
+@media (min-width: 1025px) {
+  .container {
+    max-width: 1200px;
+  }
+}
+
+/* Адаптивные формы */
+@media (max-width: 600px) {
+  .form-container {
+    width: 95%;
+    padding: 15px;
+  }
+
+  .edit-profile-container {
+    padding: 10px;
+  }
+
+  .edit-profile-container input[type="text"],
+  .edit-profile-container textarea {
+    font-size: 14px;
+    padding: 8px;
+  }
+
+  .edit-profile-container button {
+    width: 100%;
+    margin-bottom: 10px;
+    font-size: 16px;
+    padding: 10px 15px;
+  }
+}
+
+@media (max-width: 1024px) {
+  .main-container {
+    flex-direction: column;
+    margin-left: 0;
+    padding: 10px;
+  }
+
+  .sidebar {
+    width: 100%;
+    margin-bottom: 20px;
+    padding: 30px;
+  }
+
+  .student-item {
+    width: 100%;
+    margin-right: 0;
+    padding: 15px;
+  }
+
+  .user-avatar {
+    width: 40px;
+    height: 40px;
+  }
+
+  .user-details a {
+    font-size: 16px;
+  }
+}
