@@ -1,20 +1,36 @@
 const sequelize = require("../../db");
 const { DataTypes } = require("sequelize");
 
-const workExperience = sequelize.define(
-  "workExperience",
-  {
-    id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
-    investorId: {
-      type: DataTypes.INTEGER,
-      references: { model: "investor", key: "id" },
-    },
-    achievement: { type: DataTypes.TEXT, allowNull: false },
-    description: { type: DataTypes.TEXT, allowNull: true },
+const WorkExperience = sequelize.define("workExperience", {
+  id: {
+    type: DataTypes.INTEGER,
+    primaryKey: true,
+    autoIncrement: true,
   },
-  {
-    tableName: "workExperience",
-  }
-);
+  investorId: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    references: {
+      model: "investor",
+      key: "id",
+    },
+  },
+  skillName: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  yearsOfExperience: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+  },
+  proficiencyLevel: {
+    type: DataTypes.ENUM("Beginner", "Intermediate", "Advanced", "Expert"),
+    allowNull: false,
+  },
+  description: {
+    type: DataTypes.TEXT,
+    allowNull: true,
+  },
+});
 
-module.exports = workExperience;
+module.exports = WorkExperience;

@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="assets/css/styles.css" />
   </head>
   <body>
+    <div id="loading-indicator"></div>
     <header>
       <div class="hcontainer">
         <a class="h1-style" href="/investor-main"><h1>InsightHub</h1></a>
@@ -16,7 +17,9 @@
               <img src="assets/icons/default-image.png" alt="User Profile" />
             </div>
             <ul class="dropdown-menu" role="menu" aria-hidden="true">
-              <li role="menuitem"><span class="user-name">User</span></li>
+              <li role="menuitem">
+                <h2 id="loading-investor-name">Loading...</h2>
+              </li>
               <li role="menuitem">
                 <a href="/investor-profile"
                   ><i class="profile-icon"></i> View Profile</a
@@ -45,9 +48,10 @@
                 <div class="profile-details">
                   <div class="profile-image-container">
                     <img
-                      class="profile-image"
-                      src="assets/icons/default-pic.png"
+                      id="profile-image"
+                      src="assets/icons/default-image.png"
                       alt="Profile Image"
+                      class="profile-image-img"
                     />
                   </div>
                   <div class="divider"></div>
@@ -62,19 +66,26 @@
               <div class="main-content-wrapper">
                 <div class="fullname-title">
                   <div class="name-address">
-                    <h1 id="name">Bilol Abdilxayev</h1>
-                    <h3 id="location">Tashkent, UZB</h3>
+                    <h1 id="name">
+                      Loading...
+                      <a
+                        href="/investor-profile-change"
+                        id="change-profile-link"
+                        style="display: none"
+                      >
+                        <img
+                          src="assets/icons/change-profile.png"
+                          alt="Change Profile"
+                          class="change-profile-icon"
+                        />
+                      </a>
+                    </h1>
+                    <h3 id="location">Loading...</h3>
                   </div>
                   <h2 class="profile-type" id="role">Investor</h2>
                 </div>
                 <div class="description-column">
-                  <div class="investor-description" id="bio">
-                    Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-                    Phasellus imperdiet, nulla et dictum interdum, nisi lorem
-                    egestas odio, vitae scelerisque enim ligula venenatis dolor.
-                    Maecenas nisl est, ultrices nec congue eget, auctor vitae
-                    massa.
-                  </div>
+                  <div class="investor-description" id="bio">Loading...</div>
                 </div>
                 <div class="achievements-section">
                   <div class="upper-container">
@@ -102,7 +113,6 @@
         </div>
       </div>
     </div>
-    <div id="loading-indicator" style="display: none">Loading...</div>
     <script src="assets/js/investor-profile.js"></script>
   </body>
 </html>

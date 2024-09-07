@@ -13,13 +13,12 @@ const generateJwt = (id, email) => {
   return jwt.sign({ id, email }, process.env.JWT_TOKEN, { expiresIn: "24h" });
 };
 
-// Настройка хранилища для загрузки изображений профиля
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     const token = req.cookies.authToken;
     const decoded = jwt.verify(token, process.env.JWT_TOKEN);
     const userId = decoded.id;
-    const uploadDir = `assets/uploads/investor/${userId}`;
+    const uploadDir = `assets/uploads/investors/${userId}`;
     fs.mkdirSync(uploadDir, { recursive: true });
     cb(null, uploadDir);
   },
@@ -42,7 +41,7 @@ const upload = multer({
   },
 });
 
-class investorController {
+class InvestorController {
   async createInvestor(req, res, next) {
     try {
       const {
@@ -168,11 +167,12 @@ class investorController {
     }
   }
 
-  async getInvestors(req, res) {
+  async getInvestors(req, res, next) {
     try {
       const investors = await Investor.findAll();
       res.json(investors);
     } catch (error) {
+      console.error("Error fetching investors:", error);
       next(ApiError.internal("Error fetching investors"));
     }
   }
@@ -183,7 +183,9 @@ class investorController {
       if (!id || isNaN(id)) {
         return next(ApiError.badRequest("Invalid investor ID"));
       }
-      const investor = await Investor.findByPk(id);
+      const investor = await Investor.findByPk(id, {
+        include: [WorkHistory, WorkExperience],
+      });
 
       if (!investor) {
         return next(ApiError.notFound("Investor not found"));
@@ -204,40 +206,47 @@ class investorController {
         companyName,
         jobFunc,
         bio,
-        workExperience,
         workHistory,
+        workExperience,
       } = req.body;
 
-      // Validate user ID
       if (!id || isNaN(id)) {
         return next(ApiError.badRequest("Invalid investor ID"));
       }
 
-      // Fetch investor from database
       const investor = await Investor.findByPk(id);
       if (!investor) {
         return next(ApiError.notFound("Investor not found"));
       }
 
-      // Update investor data only if the field has been changed
       if (profile_image) investor.profile_image = profile_image;
-      if (location) investor.location = location;
       if (location) investor.location = location;
       if (companyName) investor.companyName = companyName;
       if (jobFunc) investor.jobFunc = jobFunc;
       if (bio) investor.bio = bio;
 
-      // Update work experience and work history
-      if (workExperience) investor.workExperience = workExperience;
-      if (workHistory) investor.workHistory = workHistory;
-
-      // Save changes to database
       await investor.save();
 
-      // Return success response
-      res.json(investor);
+      if (workHistory) {
+        await WorkHistory.destroy({ where: { investorId: id } });
+        await WorkHistory.bulkCreate(
+          workHistory.map((wh) => ({ ...wh, investorId: id }))
+        );
+      }
+
+      if (workExperience) {
+        await WorkExperience.destroy({ where: { investorId: id } });
+        await WorkExperience.bulkCreate(
+          workExperience.map((we) => ({ ...we, investorId: id }))
+        );
+      }
+
+      const updatedInvestor = await Investor.findByPk(id, {
+        include: [WorkHistory, WorkExperience],
+      });
+
+      res.json(updatedInvestor);
     } catch (error) {
-      // Handle errors
       console.error("Error updating investor:", error);
       next(ApiError.internal("Error updating investor", error));
     }
@@ -246,6 +255,7 @@ class investorController {
   async uploadProfileImage(req, res, next) {
     upload.single("profileImage")(req, res, async (err) => {
       if (err) {
+        console.error("Multer error:", err);
         if (
           err instanceof multer.MulterError &&
           err.code === "LIMIT_FILE_SIZE"
@@ -263,13 +273,50 @@ class investorController {
           return next(ApiError.badRequest("No image uploaded"));
         }
 
+        console.log("File received:", profileImage);
+
         const token = req.cookies.authToken;
-        const decodedToken = jwt.verify(token, process.env.JWT_TOKEN);
+        if (!token) {
+          return next(
+            ApiError.unauthorized("No authentication token provided")
+          );
+        }
+
+        let decodedToken;
+        try {
+          decodedToken = jwt.verify(token, process.env.JWT_TOKEN);
+        } catch (tokenError) {
+          console.error("Token verification error:", tokenError);
+          return next(ApiError.unauthorized("Invalid authentication token"));
+        }
+
         const userId = decodedToken.id;
+        console.log("User ID:", userId);
+
+        const uploadDir = `assets/uploads/investor/${userId}`;
+        console.log("Upload directory:", uploadDir);
+
+        // Ensure the directory exists
+        try {
+          await fs.promises.mkdir(uploadDir, { recursive: true });
+        } catch (mkdirError) {
+          console.error("Error creating directory:", mkdirError);
+          return next(ApiError.internal("Error creating upload directory"));
+        }
 
         const investor = await Investor.findByPk(userId);
         if (!investor) {
           return next(ApiError.notFound("Investor not found"));
+        }
+
+        const filePath = path.join(uploadDir, profileImage.filename);
+        console.log("File path:", filePath);
+
+        try {
+          await fs.promises.rename(profileImage.path, filePath);
+        } catch (renameError) {
+          console.error("Error moving file:", renameError);
+          return next(ApiError.internal("Error saving uploaded file"));
         }
 
         investor.profile_image = profileImage.filename;
@@ -280,34 +327,10 @@ class investorController {
           filename: profileImage.filename,
         });
       } catch (error) {
+        console.error("Error in uploadProfileImage:", error);
         next(ApiError.internal("Error uploading image"));
       }
     });
-  }
-
-  async getUniversities(req, res, next) {
-    try {
-      const universities = await University.findAll();
-      res.json(universities);
-    } catch (error) {
-      console.error("Error fetching universities:", error);
-      next(ApiError.internal("Error fetching universities"));
-    }
-  }
-
-  async getMajors(req, res, next) {
-    try {
-      const majors = await Major.findAll();
-
-      if (majors.length === 0) {
-        return res.status(404).json({ message: "No majors found" });
-      }
-
-      res.json(majors);
-    } catch (error) {
-      console.error("Error fetching majors:", error);
-      next(ApiError.internal("An error occurred while fetching majors"));
-    }
   }
 
   async deleteInvestor(req, res, next) {
@@ -315,6 +338,8 @@ class investorController {
       const id = req.params.id;
       const investor = await Investor.findByPk(id);
       if (investor) {
+        await WorkHistory.destroy({ where: { investorId: id } });
+        await WorkExperience.destroy({ where: { investorId: id } });
         await investor.destroy();
         res.json({ message: "Investor deleted successfully" });
       } else {
@@ -327,4 +352,4 @@ class investorController {
   }
 }
 
-module.exports = new investorController();
+module.exports = new InvestorController();

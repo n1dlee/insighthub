@@ -26,7 +26,6 @@
             </div>
             <ul class="dropdown-menu" role="menu" aria-hidden="true">
               <li role="menuitem"><span class="user-name">User</span></li>
-
               <li role="menuitem">
                 <a href="/investor-profile"
                   ><i class="profile-icon"></i> View Profile</a
@@ -53,9 +52,8 @@
 
         <div id="image-preview-container" style="display: none">
           <img id="image-preview" src="" alt="Image Preview" />
-
           <div id="crop-controls">
-            <button id="crop-button">Crop & Save</button>
+            <button type="button" id="crop-button">Crop & Save</button>
           </div>
         </div>
 
@@ -64,7 +62,6 @@
           <input type="text" id="name" name="name" />
           <label for="surname">Surname:</label>
           <input type="text" id="surname" name="surname" />
-          <br /><br />
         </div>
 
         <label for="location">Location:</label>
@@ -75,17 +72,13 @@
 
         <div class="work-history">
           <label>Work History:</label>
-          <div id="work-history-entries">
-            <!-- dynamically generated work history entries will appear here -->
-          </div>
+          <div id="work-history-entries"></div>
           <button type="button" id="add-work-history">Add Work History</button>
         </div>
 
         <div class="work-experience">
           <label>Work Experience:</label>
-          <div id="work-experience-entries">
-            <!-- dynamically generated work experience entries will appear here -->
-          </div>
+          <div id="work-experience-entries"></div>
           <button type="button" id="add-work-experience">
             Add Work Experience
           </button>
@@ -95,24 +88,8 @@
         <a href="/investor-profile" class="discard-button">Back To Profile</a>
       </form>
     </div>
-    <script src="assets/js/image-crop.js"></script>
+
+    <script src="assets/js/investor-image-crop.js"></script>
     <script src="assets/js/investor-profile-edit.js"></script>
-    <script>
-      const tabButtons = document.querySelectorAll(".tab-button");
-      const tabContents = document.querySelectorAll(".tab-content");
-
-      tabButtons.forEach((button) => {
-        button.addEventListener("click", () => {
-          const tabId = button.dataset.tab;
-
-          tabContents.forEach((content) => {
-            content.style.display = content.id === tabId ? "block" : "none";
-          });
-
-          tabButtons.forEach((btn) => btn.classList.remove("active"));
-          button.classList.add("active");
-        });
-      });
-    </script>
   </body>
 </html>

@@ -9,7 +9,7 @@ router.post("/investor", investorController.createInvestor);
 router.post("/investor-login", investorController.login);
 router.post("/logout", investorController.logout);
 router.post(
-  "/investor/:id/upload-profile-image",
+  "/investor/:id/upload-investor-image",
   investorController.uploadProfileImage
 );
 router.get("/auth-investor", authMiddleware, investorController.check);
@@ -21,7 +21,5 @@ router.delete(
   authMiddleware,
   investorController.deleteInvestor
 );
-router.get("/universities", investorController.getUniversities);
-router.get("/majors", investorController.getMajors);
 
 module.exports = router;
