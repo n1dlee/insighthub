@@ -11,7 +11,7 @@ const getLatestNews = async () => {
       throw new Error("Error fetching news from the API");
     }
     const data = await response.json();
-    return data.articles; // Return the array of articles
+    return data.articles;
   } catch (error) {
     throw new Error(`News Model Error: ${error.message}`);
   }
