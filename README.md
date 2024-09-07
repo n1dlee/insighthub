@@ -12,7 +12,7 @@ InsightHub is a web platform that connects students seeking financial support fo
 ## Technologies Used
 
 - **Backend:** Node.js with Express.js framework
-- **Database:** Sequelize ORM (likely interacting with a relational database like PostgreSQL or MySQL)
+- **Database:** Sequelize ORM (likely interacting with a relational database like PostgreSQL)
 - **Frontend:** HTML, CSS, JavaScript
 - **Other:** bcrypt (for password hashing), cookie-parser (for managing cookies), cors (for handling Cross-Origin Resource Sharing)
 
