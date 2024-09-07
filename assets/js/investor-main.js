@@ -137,11 +137,11 @@ function createUserItem(user, majorsData) {
   }'s avatar" onerror="this.src='assets/icons/default-avatar.png';">
     </div> 
     <div class="user-details">
-      <button class="info-button" style="float: left;">Show Info</button> <!-- Moved button to the left -->
+      <button class="info-button" style="float: left;">Show Info</button>
       <a href="profile?id=${user.id}">
         <h3>${user.name || "N/A"} ${user.surname || "N/A"}</h3>
       </a> 
-      <p>${user.educationPlace || "N/A"}, ${majorName}, ${investment}</p>
+      <p>${user.educationPlace || "N/A"}, ${majorName}</p>
     </div>
   `;
 
@@ -200,6 +200,7 @@ function createUserItem(user, majorsData) {
       <p>Education Place: ${user.educationPlace || "N/A"}</p>
       <p>Major: ${majorName}</p>
       <p>Investment: ${investment}</p>
+      <p>Email: ${user.email}</p>
     `;
     popupContainer.innerHTML = popupContent;
 

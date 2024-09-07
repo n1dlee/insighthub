@@ -141,7 +141,7 @@ function createUserItem(user, majorsData) {
       <a href="profile?id=${user.id}">
         <h3>${user.name || "N/A"} ${user.surname || "N/A"}</h3>
       </a> 
-      <p>${user.educationPlace || "N/A"}, ${majorName}, ${investment}</p>
+      <p>${user.educationPlace || "N/A"}, ${majorName}</p>
     </div>
   `;
 
@@ -200,6 +200,7 @@ function createUserItem(user, majorsData) {
       <p>Education Place: ${user.educationPlace || "N/A"}</p>
       <p>Major: ${majorName}</p>
       <p>Investment: ${investment}</p>
+      <p>Email: ${user.email}</p>
     `;
     popupContainer.innerHTML = popupContent;
 
