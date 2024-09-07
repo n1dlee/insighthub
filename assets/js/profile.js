@@ -130,7 +130,7 @@ async function populateProfile(profileData, currentUserId, majorsData) {
       profileData.achievements || "Achievements not provided";
 
     const profileImage = document.getElementById("profile-image");
-    const imageUrl = `/assets/uploads/students/${profileData.id}/image.png`; // Construct the image URL
+    const imageUrl = `/assets/uploads/${profileData.id}/image.png`; // Construct the image URL
     profileImage.src = imageUrl;
 
     profileImage.onerror = function () {
