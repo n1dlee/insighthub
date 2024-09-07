@@ -1,15 +1,18 @@
 document.addEventListener("DOMContentLoaded", async () => {
-  const urlParams = new URLSearchParams(window.location.search);
-  const profileUserId = urlParams.get("id");
-
-  if (!profileUserId) {
-    window.location.replace("/login-student");
-    return;
-  }
-
   try {
-    navBar();
-    const currentUserData = await loadCurrentUserData();
+    console.log("DOM fully loaded and parsed");
+    const userData = await loadCurrentUserData();
+    await navBar(userData);
+    console.log("navBar function completed");
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const profileUserId = urlParams.get("id");
+
+    if (!profileUserId) {
+      console.log("No profile ID found, redirecting to login");
+      window.location.replace("/login-student");
+      return;
+    }
 
     const logoutLink = document.querySelector(
       '.dropdown-menu a[href="/logout"]'
@@ -21,36 +24,12 @@ document.addEventListener("DOMContentLoaded", async () => {
       });
     }
 
-    loadProfile(profileUserId, currentUserData);
+    await loadProfile(profileUserId, userData);
   } catch (error) {
+    console.error("Error during page initialization:", error);
     handleError("Error checking authentication or loading profile:", error);
-    window.location.replace("/login-student");
   }
 });
-
-async function loadCurrentUserData() {
-  try {
-    const response = await fetch("/api/auth-student", {
-      credentials: "include",
-    });
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! Status: ${response.status}`);
-    }
-
-    const data = await response.json();
-    console.log("Loaded user data:", data);
-
-    if (!data || !data.id) {
-      throw new Error("Invalid user data received from server");
-    }
-
-    return data;
-  } catch (error) {
-    console.error("Error in loadCurrentUserData:", error);
-    throw error;
-  }
-}
 
 async function loadProfile(profileUserId, currentUserData) {
   try {
@@ -71,11 +50,9 @@ async function loadProfile(profileUserId, currentUserData) {
 
     addChangeProfileIcon(profileUserId, currentUserData.id);
 
-    // Fetch majors data and await its resolution
     const majorsData = await loadMajors();
 
     populateProfile(profileData, currentUserData.id, majorsData);
-    navBar(profileData, currentUserData.id);
   } catch (error) {
     hideLoadingIndicator();
     showError("An error occurred while loading the profile.");
@@ -87,10 +64,9 @@ async function populateProfile(profileData, currentUserId, majorsData) {
   try {
     console.log("Loading profile for user:", profileData);
 
-    const studentNameElement = document.getElementById("student-name");
-    studentNameElement.textContent = `${profileData.name || "N/A"} ${
-      profileData.surname || "N/A"
-    }`;
+    document.getElementById("student-name").textContent = `${
+      profileData.name || "N/A"
+    } ${profileData.surname || "N/A"}`;
 
     document.getElementById("student-location").textContent =
       profileData.location || "Location not provided";
@@ -147,16 +123,31 @@ async function populateProfile(profileData, currentUserId, majorsData) {
   }
 }
 
-async function navBar() {
+async function navBar(userData) {
   const userProfileWrapper = document.querySelector(".user-profile-wrapper");
   const userNameElement = document.getElementById("loading-student-name");
 
-  try {
-    if (userNameElement) {
-      userNameElement.textContent = "Loading...";
-    }
+  console.log("navBar function called");
 
-    const userData = await loadCurrentUserData();
+  try {
+    if (!userData) {
+      userData = await loadCurrentUserData();
+    }
+    console.log("User data in navBar:", userData);
+
+    if (userNameElement && userData) {
+      const fullName =
+        `${userData.name || ""} ${userData.surname || ""}`.trim() || "N/A";
+      userNameElement.textContent = fullName;
+      console.log("Set user name:", fullName);
+    } else {
+      console.log(
+        "Unable to set user name. userNameElement:",
+        userNameElement,
+        "userData:",
+        userData
+      );
+    }
 
     if (userProfileWrapper) {
       const profileImage =
@@ -164,6 +155,7 @@ async function navBar() {
       if (profileImage && userData.id) {
         const userImageSrc = `assets/uploads/${userData.id}/image.png`;
         profileImage.src = userImageSrc;
+        console.log("Set profile image source:", userImageSrc);
 
         profileImage.onerror = () => {
           console.error("Failed to load user profile image. Using default.");
@@ -172,26 +164,61 @@ async function navBar() {
       }
     }
 
-    if (userNameElement && userData) {
-      userNameElement.textContent =
-        `${userData.name || ""} ${userData.surname || ""}`.trim() || "N/A";
-    }
-
     const profileLink = document.querySelector(
       '.dropdown-menu a[href^="/profile"]'
     );
     if (profileLink && userData.id) {
       profileLink.href = `/profile?id=${userData.id}`;
-      console.log("Profile link updated");
-    } else {
-      console.log("Profile link element not found or user ID is missing");
+      console.log("Updated profile link:", profileLink.href);
     }
   } catch (error) {
-    console.error("Error updating navbar:", error);
-    const userNameElement = document.querySelector(".dropdown-menu h2");
+    console.error("Error in navBar function:", error);
     if (userNameElement) {
       userNameElement.textContent = "Error loading user data";
     }
+  }
+}
+
+// Function to handle navigation to the profile page
+function navigateToProfile(userId) {
+  if (userId) {
+    console.log("Navigating to profile:", `/profile?id=${userId}`);
+    window.location.href = `/profile?id=${userId}`;
+  } else {
+    console.error("User ID is missing. Unable to navigate to profile.");
+  }
+}
+
+async function loadCurrentUserData() {
+  try {
+    const response = await fetch("/api/auth-student", {
+      credentials: "include",
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! Status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    console.log("Initial user data:", data);
+
+    if (!data || !data.id) {
+      throw new Error("Invalid user data received from server");
+    }
+
+    // Fetch full user data
+    const fullDataResponse = await fetch(`/api/user/${data.id}`);
+    if (!fullDataResponse.ok) {
+      throw new Error(`HTTP error! Status: ${fullDataResponse.status}`);
+    }
+
+    const fullData = await fullDataResponse.json();
+    console.log("Full user data:", fullData);
+
+    return fullData;
+  } catch (error) {
+    console.error("Error in loadCurrentUserData:", error);
+    throw error;
   }
 }
 

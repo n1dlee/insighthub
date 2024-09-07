@@ -9,14 +9,11 @@ document.addEventListener("DOMContentLoaded", async () => {
     loadUsers();
     loadUniversities();
 
-    // Вызываем updateIconBar после загрузки всех данных
     await updateIconBar();
 
-    // Остальной код...
     if (window.location.pathname === "/profile") {
       handleProfilePage();
     } else if (window.location.pathname === "/login") {
-      // Logic specific to the login page (if any)
     }
 
     // Attach logout functionality (if applicable on this page)
