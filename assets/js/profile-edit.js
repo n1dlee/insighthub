@@ -5,6 +5,9 @@ document.addEventListener("DOMContentLoaded", async () => {
   const urlParams = new URLSearchParams(window.location.search);
   const userId = urlParams.get("id");
 
+  await updateIconBar();
+  attachEventListeners();
+
   console.log("Profile Edit page loaded. User ID from URL:", userId);
 
   if (!userId) {
@@ -15,8 +18,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   try {
     // Fetch initial user data (logged-in user)
-    const currentUserData = await loadProfileData();
-    console.log("Current user data (from /api/auth):", currentUserData);
+    const currentUserData = await loadCurrentUserData();
+    console.log("Current user data (from /api/auth-student):", currentUserData);
 
     if (!currentUserData || !currentUserData.id) {
       throw new Error("Invalid user data received from server");
@@ -53,6 +56,19 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   } catch (error) {
     handleError("Error loading profile data:", error);
+  }
+
+  function attachEventListeners() {
+    // Attach logout functionality (if applicable on this page)
+    const logoutLink = document.querySelector(
+      '.dropdown-menu a[href="/logout"]'
+    );
+    if (logoutLink) {
+      logoutLink.addEventListener("click", (event) => {
+        event.preventDefault();
+        logout();
+      });
+    }
   }
 
   // Handle form submission
@@ -94,8 +110,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   async function loadProfileData(userId) {
     try {
-      const endpoint = userId ? `/api/user/${userId}` : "/api/auth-student"; // Adjusted for profile editing
-      console.log("Fetching profile data from:", endpoint); // Debugging
+      const endpoint = userId ? `/api/user/${userId}` : "/api/auth-student";
+      console.log("Fetching profile data from:", endpoint);
 
       const response = await fetch(endpoint, {
         credentials: "include",
@@ -128,6 +144,34 @@ document.addEventListener("DOMContentLoaded", async () => {
     } catch (error) {
       console.error("Error loading profile data:", error);
       throw error;
+    }
+  }
+
+  async function loadCurrentUserData() {
+    try {
+      const response = await fetch("/api/auth-student", {
+        credentials: "include",
+      });
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          throw new Error("Unauthorized. Please log in.");
+        } else {
+          throw new Error(
+            "Network response was not ok. Status: " + response.status
+          );
+        }
+      }
+
+      const userData = await response.json();
+      if (!userData || !userData.id) {
+        throw new Error("No user data or ID found.");
+      }
+
+      return userData;
+    } catch (error) {
+      console.error("Error checking authentication:", error);
+      window.location.replace("/login-student");
     }
   }
 
@@ -185,9 +229,100 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   }
 
+  async function updateIconBar() {
+    const userProfileWrapper = document.querySelector(".user-profile-wrapper");
+    const userNameElement = document.getElementById("loading-student-name");
+
+    try {
+      if (userNameElement) {
+        userNameElement.textContent = "Loading...";
+      }
+
+      const userData = await loadCurrentUserData();
+
+      if (userProfileWrapper) {
+        const profileImage =
+          userProfileWrapper.querySelector(".user-profile img");
+        if (profileImage && userData.id) {
+          const userImageSrc = `assets/uploads/${userData.id}/image.png`;
+          profileImage.src = userImageSrc;
+
+          profileImage.onerror = () => {
+            console.error("Failed to load user profile image. Using default.");
+            profileImage.src = "assets/icons/default-image.png";
+          };
+        }
+      }
+
+      if (userNameElement && userData) {
+        userNameElement.textContent =
+          `${userData.name || ""} ${userData.surname || ""}`.trim() || "N/A";
+      }
+
+      const profileLink = document.querySelector('a[href="/profile"]');
+      if (profileLink && userData && userData.id) {
+        profileLink.href = `/profile?id=${userData.id}`;
+        profileLink.addEventListener("click", (event) => {
+          event.preventDefault();
+          navigateToProfile(userData.id);
+        });
+      }
+
+      navBar(userData);
+    } catch (error) {
+      console.error("Error fetching user details:", error);
+      if (userNameElement) {
+        userNameElement.textContent = "Error loading user data";
+      }
+    }
+  }
+
+  function navigateToProfile(userId) {
+    if (userId) {
+      window.location.href = `/profile?id=${userId}`;
+    } else {
+      console.error("User ID is missing. Unable to navigate to profile.");
+    }
+  }
+
+  function navBar(userData) {
+    const navbarUserName = document.getElementById("navbar-user-name");
+    if (navbarUserName && userData) {
+      navbarUserName.textContent =
+        `${userData.name || ""} ${userData.surname || ""}`.trim() || "N/A";
+    }
+
+    const profileLink = document.querySelector('a[href="/profile"]');
+    if (profileLink && userData && userData.id) {
+      profileLink.href = `/profile?id=${userData.id}`;
+      profileLink.addEventListener("click", (event) => {
+        event.preventDefault();
+        navigateToProfile(userData.id);
+      });
+    }
+  }
+
+  async function logout() {
+    try {
+      const response = await fetch("/api/logout", {
+        method: "POST",
+        credentials: "include",
+      });
+
+      if (response.ok) {
+        window.location.href = "/login";
+      } else {
+        throw new Error("Logout failed. Please try again.");
+      }
+    } catch (error) {
+      console.error("Error during logout:", error);
+      alert(error.message);
+    }
+  }
+
   function handleError(message, error) {
     console.error(message, error);
-    alert(error?.message || message); // Display a user-friendly error message
+    alert(error?.message || message);
   }
 
   function handleFetchResponse(response) {

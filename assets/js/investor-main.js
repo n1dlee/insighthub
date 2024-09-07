@@ -23,7 +23,6 @@ document.addEventListener("DOMContentLoaded", async () => {
       // Handle login page specifics if needed
     }
 
-    // Attach event listeners
     attachEventListeners();
 
     // Apply initial filters
@@ -47,26 +46,6 @@ function initializeFilterElements() {
   console.log("majorSelect:", majorSelect);
   console.log("investmentSelect:", investmentSelect);
   console.log("studentNameInput:", studentNameInput);
-}
-
-function attachEventListeners() {
-  // Attach logout functionality (if applicable on this page)
-  const logoutLink = document.querySelector('.dropdown-menu a[href="/logout"]');
-  if (logoutLink) {
-    logoutLink.addEventListener("click", (event) => {
-      event.preventDefault();
-      logout();
-    });
-  }
-
-  // Attach filter event listeners
-  if (universitySelect)
-    universitySelect.addEventListener("change", applyFilters);
-  if (majorSelect) majorSelect.addEventListener("change", applyFilters);
-  if (investmentSelect)
-    investmentSelect.addEventListener("change", applyFilters);
-  if (studentNameInput)
-    studentNameInput.addEventListener("input", debounce(applyFilters, 300));
 }
 
 function attachEventListeners() {

@@ -16,6 +16,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
   </head>
   <body>
+    <div id="loading-indicator"></div>
     <header>
       <div class="hcontainer">
         <a class="h1-style" href="/investor-main"><h1>InsightHub</h1></a>
@@ -25,7 +26,9 @@
               <img src="assets/icons/default-image.png" alt="User Profile" />
             </div>
             <ul class="dropdown-menu" role="menu" aria-hidden="true">
-              <li role="menuitem"><span class="user-name">User</span></li>
+              <li role="menuitem">
+                <h2 id="loading-student-name">Loading...</h2>
+              </li>
               <li role="menuitem">
                 <a href="/investor-profile"
                   ><i class="profile-icon"></i> View Profile</a
