@@ -9,6 +9,7 @@ const userRouter = require("./assets/routes/user.routes");
 const investorPostRouter = require("./assets/routes/investor-post.routes");
 const studentPostRouter = require("./assets/routes/student-post.routes");
 const investorRouter = require("./assets/routes/investor.routes");
+const newsRouter = require("./assets/routes/news.router");
 
 const PORT = process.env.PORT || 8080;
 const app = express();
@@ -39,6 +40,9 @@ app.use("/api", investorPostRouter);
 app.use("/api", studentPostRouter);
 app.use("/api", investorRouter);
 
+// Mount the news router
+app.use("/api", newsRouter);
+
 // Asset Route
 app.use("/assets", express.static(path.join(__dirname, "assets")));
 
@@ -58,6 +62,10 @@ app.get(["/main"], (req, res) => {
 
 app.get(["/investor-main"], (req, res) => {
   res.sendFile(path.join(__dirname, "investor-main.html"));
+});
+
+app.get(["/discover"], (req, res) => {
+  res.sendFile(path.join(__dirname, "discover.html"));
 });
 
 // Register page
