@@ -1,32 +1,55 @@
-const universitySelect = document.getElementById("university");
-const majorSelect = document.getElementById("major");
-const investmentSelect = document.getElementById("investment");
+let universitySelect, majorSelect, investmentSelect, studentNameInput;
+let allUsers = [];
+let allMajors = [];
 
 document.addEventListener("DOMContentLoaded", async () => {
   try {
+    // Initialize DOM elements
+    initializeFilterElements();
+
+    // Load data
     allMajors = await loadMajors();
-    populateDropdown("major", allMajors);
-    loadUsers();
-    loadUniversities();
-    loadMajors();
+    await loadUniversities();
+    await loadUsers();
+
+    // Populate dropdowns
+    if (majorSelect) populateDropdown("major", allMajors);
+
+    await updateIconBar();
+
+    if (window.location.pathname === "/profile") {
+      handleProfilePage();
+    } else if (window.location.pathname === "/login") {
+      // Handle login page specifics if needed
+    }
+
+    // Attach event listeners
+    attachEventListeners();
+
+    // Apply initial filters
+    applyFilters();
   } catch (error) {
-    showError(error.message);
+    console.error("Error during page initialization:", error);
+    showError(
+      "An error occurred while loading the page. Please try refreshing."
+    );
   }
-  // Check if on the profile page and handle authentication
-  if (window.location.pathname === "/investor-profile") {
-    handleProfilePage();
-  } else if (window.location.pathname === "/login") {
-    // Logic specific to the login page (if any)
-  }
+});
 
-  const studentList = document.getElementById("student-list");
-  if (studentList) {
-    // Call updateStudentList only when studentList is available
-    updateStudentList(allUsers);
-  } else {
-    console.error("Student list element not found");
-  }
+function initializeFilterElements() {
+  universitySelect = document.getElementById("university");
+  majorSelect = document.getElementById("major");
+  investmentSelect = document.getElementById("investment");
+  studentNameInput = document.getElementById("student-name-input");
 
+  console.log("Filter elements initialization:");
+  console.log("universitySelect:", universitySelect);
+  console.log("majorSelect:", majorSelect);
+  console.log("investmentSelect:", investmentSelect);
+  console.log("studentNameInput:", studentNameInput);
+}
+
+function attachEventListeners() {
   // Attach logout functionality (if applicable on this page)
   const logoutLink = document.querySelector('.dropdown-menu a[href="/logout"]');
   if (logoutLink) {
@@ -36,27 +59,62 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   }
 
-  if (universitySelect && majorSelect && investmentSelect) {
+  // Attach filter event listeners
+  if (universitySelect)
     universitySelect.addEventListener("change", applyFilters);
-    majorSelect.addEventListener("change", applyFilters);
+  if (majorSelect) majorSelect.addEventListener("change", applyFilters);
+  if (investmentSelect)
     investmentSelect.addEventListener("change", applyFilters);
+  if (studentNameInput)
+    studentNameInput.addEventListener("input", debounce(applyFilters, 300));
+}
+
+function attachEventListeners() {
+  // Attach logout functionality (if applicable on this page)
+  const logoutLink = document.querySelector('.dropdown-menu a[href="/logout"]');
+  if (logoutLink) {
+    logoutLink.addEventListener("click", (event) => {
+      event.preventDefault();
+      logout();
+    });
   }
-});
 
-let allUsers = [];
-let allMajors = [];
+  // Attach filter event listeners
+  if (universitySelect)
+    universitySelect.addEventListener("change", applyFilters);
+  if (majorSelect) majorSelect.addEventListener("change", applyFilters);
+  if (investmentSelect)
+    investmentSelect.addEventListener("change", applyFilters);
+  if (studentNameInput)
+    studentNameInput.addEventListener("input", debounce(applyFilters, 300));
+}
 
-function loadUsers() {
+function debounce(func, wait) {
+  let timeout;
+  return function executedFunction(...args) {
+    const later = () => {
+      clearTimeout(timeout);
+      func(...args);
+    };
+    clearTimeout(timeout);
+    timeout = setTimeout(later, wait);
+  };
+}
+
+async function loadUsers() {
   showLoadingIndicator();
 
-  fetch("/api/users") // Assuming you have a route to fetch all users
-    .then(handleFetchResponse)
-    .then((users) => {
-      allUsers = users;
-      updateStudentList(users);
-      hideLoadingIndicator();
-    })
-    .catch(handleError("Error loading user data"));
+  try {
+    const response = await fetch("/api/users");
+    if (!response.ok) {
+      throw new Error("Failed to fetch users");
+    }
+    allUsers = await response.json();
+    hideLoadingIndicator();
+  } catch (error) {
+    handleError("Error loading user data")(error);
+    hideLoadingIndicator();
+  }
 }
 
 function createUserItem(user, majorsData) {
@@ -65,24 +123,104 @@ function createUserItem(user, majorsData) {
 
   const investment = user.investment ? `$${user.investment}/year` : "N/A";
 
+  // Find the major name using the major ID from the user data
   const major = majorsData.find((major) => major.id === parseInt(user.major));
   const majorName = major ? major.name : "Major not provided";
 
+  // Construct the path to the user's image
+  const userImageSrc = `assets/uploads/${user.id}/image.png`;
+
   userItem.innerHTML = `
-      <div class="user-avatar"></div> 
-      <div class="user-details">
-          <a href="profile?id=${user.id}">
-              <h3>${user.name || "N/A"} ${user.surname || "N/A"}</h3>
-          </a> 
-          <p>${user.educationPlace || "N/A"}, ${majorName}, ${investment}</p>
-      </div>
-      <div class="brief-info-icon" data-student-id="${user.id}"></div> 
+    <div class="user-avatar">
+      <img src="${userImageSrc}" alt="${
+    user.name || "User"
+  }'s avatar" onerror="this.src='assets/icons/default-avatar.png';">
+    </div> 
+    <div class="user-details">
+      <button class="info-button" style="float: left;">Show Info</button> <!-- Moved button to the left -->
+      <a href="profile?id=${user.id}">
+        <h3>${user.name || "N/A"} ${user.surname || "N/A"}</h3>
+      </a> 
+      <p>${user.educationPlace || "N/A"}, ${majorName}, ${investment}</p>
+    </div>
   `;
 
-  // Add click event listener to the brief info icon
-  const briefInfoIcon = userItem.querySelector(".brief-info-icon");
-  briefInfoIcon.addEventListener("click", () => {
-    showStudentPopup(user.id);
+  // Add event listener to the button
+  const infoButton = userItem.querySelector(".info-button");
+  infoButton.style.backgroundColor = "#4CAF50";
+  infoButton.style.color = "#fff";
+  infoButton.style.padding = "10px 20px";
+  infoButton.style.fontSize = "16px";
+  infoButton.style.cursor = "pointer";
+  infoButton.style.position = "absolute";
+  infoButton.style.border = "none";
+  infoButton.style.borderRadius = "25px";
+
+  infoButton.style.top = "25%";
+  infoButton.style.right = "15px";
+
+  infoButton.addEventListener("click", () => {
+    // Create a popup container
+    const popupContainer = document.createElement("div");
+    popupContainer.classList.add("popup-container");
+    popupContainer.style.position = "fixed";
+    popupContainer.style.top = "50%";
+    popupContainer.style.left = "50%";
+    popupContainer.style.transform = "translate(-50%, -50%)";
+    popupContainer.style.width = "300px";
+    popupContainer.style.height = "400px";
+    popupContainer.style.background = "white";
+    popupContainer.style.borderRadius = "10px";
+    popupContainer.style.padding = "20px";
+    popupContainer.style.boxShadow = "0px 0px 10px rgba(0,0,0,0.5)";
+    popupContainer.style.zIndex = "1000";
+
+    // Create an overlay element
+    const overlay = document.createElement("div");
+    overlay.classList.add("overlay");
+    overlay.style.position = "fixed";
+    overlay.style.top = "0";
+    overlay.style.left = "0";
+    overlay.style.width = "100%";
+    overlay.style.height = "100%";
+    overlay.style.background = "rgba(0, 0, 0, 0.5)";
+    overlay.style.zIndex = "999";
+
+    // Add the overlay to the body
+    document.body.appendChild(overlay);
+
+    // Add content to the popup
+    const popupContent = `
+      <img src="${userImageSrc}" alt="${
+      user.name || "User"
+    }'s avatar" onerror="this.src='assets/icons/default-avatar.png';" style="width: 100px; height: 100px; border-radius: 50%; margin-bottom: 40px; display: block; margin: 0 auto;">
+      <h2 style="margin-top: 20px;">${user.name || "N/A"} ${
+      user.surname || "N/A"
+    } </h2>
+      <p>Education Place: ${user.educationPlace || "N/A"}</p>
+      <p>Major: ${majorName}</p>
+      <p>Investment: ${investment}</p>
+    `;
+    popupContainer.innerHTML = popupContent;
+
+    // Add a close button to the popup
+    const closeButton = document.createElement("button");
+    closeButton.textContent = "X";
+    closeButton.style.fontWeight = "900";
+    closeButton.style.fontSize = "20px";
+    closeButton.style.position = "absolute";
+    closeButton.style.border = "none";
+    closeButton.style.backgroundColor = "white";
+    closeButton.style.top = "10px";
+    closeButton.style.right = "10px";
+    closeButton.addEventListener("click", () => {
+      popupContainer.remove();
+      overlay.remove();
+    });
+    popupContainer.appendChild(closeButton);
+
+    // Add the popup to the body
+    document.body.appendChild(popupContainer);
   });
 
   return userItem;
@@ -96,78 +234,20 @@ function getMajorName(majorId, majorsData) {
 async function handleProfilePage() {
   try {
     const userData = await loadCurrentUserData();
-    updateIconBar(userData);
-    navBar(userData); // Corrected here
+    updateIconBar();
 
     const urlParams = new URLSearchParams(window.location.search);
     const userId = urlParams.get("id");
 
-    // Prioritize user ID from URL, fallback to authenticated user if none provided
     const profileIdToLoad = userId || userData.id;
 
     loadProfile(profileIdToLoad, userData);
   } catch (error) {
     if (error.message === "Unauthorized. Please log in.") {
-      // Handle unauthorized access specifically (e.g., redirect to login)
       window.location.replace("/login-investor");
     } else {
-      // Handle other errors gracefully
-      handleError("Error checking authentication or loading profile:", error);
+      handleError("Error checking authentication or loading profile:")(error);
     }
-  }
-}
-
-// Функция для отображения pop-up окна
-async function showStudentPopup(studentId) {
-  try {
-    showLoadingIndicator();
-
-    const response = await fetch(`/api/user/${studentId}`);
-    if (!response.ok) {
-      throw new Error(
-        "Failed to fetch student data. Status: " + response.status
-      );
-    }
-    const studentData = await response.json();
-
-    // Заполняем pop-up данными студента
-    document.getElementById(
-      "popup-student-name"
-    ).textContent = `${studentData.name} ${studentData.surname}`;
-    document.getElementById("popup-student-email").textContent =
-      studentData.email;
-
-    // Устанавливаем изображение профиля (с обработкой ошибок)
-    const popupAvatar = document.querySelector(".student-popup-avatar");
-    const imageUrl = `/assets/uploads/${studentData.id}/image.png`;
-    popupAvatar.style.backgroundImage = `url(${imageUrl})`;
-
-    popupAvatar.onerror = function () {
-      popupAvatar.style.backgroundImage = "none"; // Сброс фона, если изображение не загрузилось
-      popupAvatar.style.backgroundColor = "#ccc"; // Возврат к цвету по умолчанию
-      console.error("Failed to load profile image. Using default.");
-    };
-
-    hideLoadingIndicator();
-
-    // Показываем pop-up
-    document.getElementById("student-popup").style.display = "block";
-
-    // Добавляем обработчик события для закрытия pop-up при клике на крестик или вне области содержимого
-    const closePopup = document.querySelector(".close-popup");
-    const popup = document.getElementById("student-popup");
-    closePopup.onclick = function () {
-      popup.style.display = "none";
-    };
-    window.onclick = function (event) {
-      if (event.target == popup) {
-        popup.style.display = "none";
-      }
-    };
-  } catch (error) {
-    hideLoadingIndicator();
-    showError("An error occurred while loading student data for the popup.");
-    console.error("Error loading student data:", error);
   }
 }
 
@@ -193,7 +273,7 @@ async function loadCurrentUserData() {
     }
 
     // Теперь загружаем дополнительные данные пользователя по ID
-    const userResponse = await fetch(`/api/user/${userData.id}`);
+    const userResponse = await fetch(`/api/investor/${userData.id}`);
     if (!userResponse.ok) {
       throw new Error(
         "Failed to fetch additional user data. Status: " + userResponse.status
@@ -208,7 +288,7 @@ async function loadCurrentUserData() {
     return completeUserData;
   } catch (error) {
     handleError("Error checking authentication:", error);
-    window.location.replace("/login-investor");
+    window.location.replace("/login-student");
   }
 }
 
@@ -262,15 +342,6 @@ function populateProfile(profileData) {
   }
 }
 
-function addBriefInfoIcon(studentContainer) {
-  const img = document.createElement("img");
-  img.src = "assets/icons/brief-info.png"; // Путь к вашему изображению
-  img.alt = "Brief Info"; // Альтернативный текст для изображения
-  img.classList.add("brief-info-icon"); // Добавьте класс для стилизации, если нужно
-
-  studentContainer.appendChild(img);
-}
-
 function logout() {
   fetch("/api/logout", {
     method: "POST",
@@ -284,57 +355,75 @@ function logout() {
 }
 
 async function updateIconBar() {
-  const userNameSpan = document.getElementById("navbar-user-name");
+  const userProfileWrapper = document.querySelector(".user-profile-wrapper");
+  const userNameElement = document.getElementById("loading-student-name");
+
   try {
-    // Display a loading message while fetching data
-    userNameSpan.textContent = "Loading user...";
-
-    const userData = await loadCurrentUserData(); // Corrected call
-
-    const userProfile = document.querySelector(".user-profile");
-
-    // Set profile image (with error handling)
-    let profileImage = userProfile.querySelector("img");
-    if (!profileImage) {
-      profileImage = new Image();
-      profileImage.alt = "User Profile";
-      userProfile.appendChild(profileImage);
+    if (userNameElement) {
+      userNameElement.textContent = "Loading...";
     }
 
-    profileImage.src =
-      userData.profileImage || "assets/icons/default-avatar.png";
-    profileImage.onerror = () => {
-      profileImage.src = "assets/icons/default-avatar.png"; // Fallback if image fails to load
-      console.error("Failed to load profile image. Using default.");
-    };
+    const userData = await loadCurrentUserData();
 
-    // Update user name using template literals
-    userNameSpan.textContent = `${userData.name || "N/A"} ${
-      userData.surname || "N/A"
-    }`;
+    if (userProfileWrapper) {
+      const profileImage =
+        userProfileWrapper.querySelector(".user-profile img");
+      if (profileImage && userData.id) {
+        const userImageSrc = `assets/uploads/investor/${userData.id}/image.png`;
+        profileImage.src = userImageSrc;
 
-    // Update profile link
-    if (userData && userData.id) {
-      const profileLink = document.querySelector('a[href="/investor-profile"]');
-      if (profileLink) {
-        profileLink.href = `/investor-profile?id=${userData.id}`;
+        profileImage.onerror = () => {
+          console.error("Failed to load user profile image. Using default.");
+          profileImage.src = "assets/icons/default-image.png";
+        };
       }
+    }
+
+    if (userNameElement && userData) {
+      userNameElement.textContent =
+        `${userData.name || ""} ${userData.surname || ""}`.trim() || "N/A";
+    }
+
+    const profileLink = document.querySelector('a[href="/investor-profile"]');
+    if (profileLink && userData && userData.id) {
+      profileLink.href = `/investor-profile?id=${userData.id}`;
+      profileLink.addEventListener("click", (event) => {
+        event.preventDefault();
+        navigateToProfile(userData.id);
+      });
     }
   } catch (error) {
     console.error("Error fetching user details:", error);
-    userNameSpan.textContent = "Error loading user data";
+    if (userNameElement) {
+      userNameElement.textContent = "Error loading user data";
+    }
   }
 }
 
-async function navBar(profileData, currentUserId) {
-  try {
-    document.getElementById("loading-investor-name").textContent = `${
-      profileData.name || "N/A"
-    } ${profileData.surname || "N/A"}`;
-  } catch (error) {
-    hideLoadingIndicator();
-    showError("An error occurred while loading the profile.");
-    console.error("Error loading profile data:", error);
+// Function to handle navigation to the profile page
+function navigateToProfile(userId) {
+  if (userId) {
+    window.location.href = `/investor-profile?id=${userId}`;
+  } else {
+    console.error("User ID is missing. Unable to navigate to profile.");
+  }
+}
+
+function navBar(userData) {
+  const navbarUserName = document.getElementById("navbar-user-name");
+  if (navbarUserName && userData) {
+    navbarUserName.textContent = `${userData.name || "N/A"} ${
+      userData.surname || "N/A"
+    }`;
+  }
+
+  const profileLink = document.querySelector('a[href="/investor-profile"]');
+  if (profileLink && userData && userData.id) {
+    profileLink.href = `/investor-profile?id=${userData.id}`;
+    profileLink.addEventListener("click", (event) => {
+      event.preventDefault();
+      navigateToProfile(userData.id);
+    });
   }
 }
 
@@ -378,46 +467,51 @@ function populateDropdown(dropdownId, data) {
 }
 
 function applyFilters() {
+  const missingElements = [];
+  if (!universitySelect) missingElements.push("university");
+  if (!majorSelect) missingElements.push("major");
+  if (!investmentSelect) missingElements.push("investment");
+  if (!studentNameInput) missingElements.push("student-name-input");
+
+  if (missingElements.length > 0) {
+    console.warn(
+      `The following filter elements are missing: ${missingElements.join(", ")}`
+    );
+    // Если элементы отсутствуют, возможно, мы находимся на странице, где фильтрация не нужна
+    return;
+  }
+
   const selectedUniversity = universitySelect.value;
   const selectedMajorName = majorSelect.value.trim().toLowerCase();
   const selectedInvestment = investmentSelect.value;
+  const searchName = studentNameInput.value.trim().toLowerCase();
 
-  const isUniversityFilterApplied = selectedUniversity !== "University";
-  const isMajorFilterApplied = selectedMajorName !== "major";
+  const filteredUsers = allUsers.filter((user) => {
+    const universityMatch =
+      selectedUniversity === "University" ||
+      user.educationPlace === selectedUniversity;
 
-  let filteredUsers = allUsers;
+    const majorMatch =
+      selectedMajorName === "major" ||
+      allMajors
+        .find((major) => major.id === parseInt(user.major))
+        ?.name.trim()
+        .toLowerCase() === selectedMajorName;
 
-  console.log("All Users:", allUsers);
+    const nameMatch = `${user.name} ${user.surname}`
+      .toLowerCase()
+      .includes(searchName);
 
-  // Фильтрация по университету и специальности
-  if (isUniversityFilterApplied || isMajorFilterApplied) {
-    filteredUsers = filteredUsers.filter((user) => {
-      const userMajorId = parseInt(user.major); // Получаем ID специальности пользователя
+    let investmentMatch = true;
+    if (selectedInvestment !== "Investment") {
+      const [min, max] = selectedInvestment
+        .split("-")
+        .map((val) => parseInt(val.replace("$", "").replace(",", "")));
+      investmentMatch = user.investment >= min && user.investment <= max;
+    }
 
-      // Находим ID специальности, соответствующий выбранному названию специальности
-      const selectedMajor = allMajors.find(
-        (major) => major.name.trim().toLowerCase() === selectedMajorName
-      );
-
-      const selectedMajorId = selectedMajor ? selectedMajor.id : null;
-
-      return (
-        (!isUniversityFilterApplied ||
-          user.educationPlace === selectedUniversity) &&
-        (!isMajorFilterApplied || userMajorId === selectedMajorId)
-      );
-    });
-  }
-
-  // Фильтрация по инвестициям
-  if (selectedInvestment !== "Investment") {
-    const [min, max] = selectedInvestment
-      .split("-")
-      .map((val) => parseInt(val.replace("$", "")));
-    filteredUsers = filteredUsers.filter(
-      (user) => user.investment >= min && user.investment <= max
-    );
-  }
+    return universityMatch && majorMatch && nameMatch && investmentMatch;
+  });
 
   updateStudentList(filteredUsers);
 
@@ -426,6 +520,16 @@ function applyFilters() {
   } else {
     hideError();
   }
+}
+
+function updateStudentList(filteredUsers) {
+  const studentList = document.getElementById("student-list");
+  studentList.innerHTML = "";
+
+  filteredUsers.forEach((user) => {
+    const userItem = createUserItem(user, allMajors);
+    studentList.appendChild(userItem);
+  });
 }
 
 // Update the student list by applying filters and creating user items
@@ -438,8 +542,6 @@ async function updateStudentList(filteredUsers) {
 
   filteredUsers.forEach((user) => {
     const userItem = createUserItem(user, majorsData);
-    addBriefInfoIcon(userItem);
-
     studentList.appendChild(userItem);
   });
 }
@@ -447,42 +549,15 @@ async function updateStudentList(filteredUsers) {
 function showLoadingIndicator() {
   const loadingContainer = document.getElementById("loading-indicator");
   const formElements = document.querySelectorAll("form input, form select");
-  formElements.forEach((el) => (el.disabled = true));
-
-  if (loadingContainer) {
-    loadingContainer.style.opacity = 0;
-    loadingContainer.style.display = "block";
-
-    requestAnimationFrame(function fadeIn() {
-      let opacity = parseFloat(loadingContainer.style.opacity);
-      opacity += 0.1;
-      loadingContainer.style.opacity = opacity;
-
-      if (opacity < 1) {
-        requestAnimationFrame(fadeIn);
-      }
-    });
-  }
+  formElements.forEach((el) => (el.disabled = true)); // Disable form elements
+  if (loadingContainer) loadingContainer.style.display = "block";
 }
 
 function hideLoadingIndicator() {
   const loadingContainer = document.getElementById("loading-indicator");
   const formElements = document.querySelectorAll("form input, form select");
-  formElements.forEach((el) => (el.disabled = false));
-
-  if (loadingContainer) {
-    requestAnimationFrame(function fadeOut() {
-      let opacity = parseFloat(loadingContainer.style.opacity);
-      opacity -= 0.1;
-      loadingContainer.style.opacity = opacity;
-
-      if (opacity > 0) {
-        requestAnimationFrame(fadeOut);
-      } else {
-        loadingContainer.style.display = "none";
-      }
-    });
-  }
+  formElements.forEach((el) => (el.disabled = false)); // Enable form elements
+  if (loadingContainer) loadingContainer.style.display = "none";
 }
 
 function showError(message) {

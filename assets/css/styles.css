@@ -1194,7 +1194,7 @@ input[type="checkbox"] {
   display: flex;
   padding: 20px;
   position: relative;
-  margin-left: 8%;
+  margin-left: 10%;
   gap: 50px;
   flex: 1;
   flex-direction: row;
@@ -1205,16 +1205,21 @@ input[type="checkbox"] {
   box-shadow: 10px 10px 20px rgba(0, 0, 0, 0.1);
   position: relative;
   justify-content: center;
-  width: 380px; /* Уменьшаем ширину */
-  border-radius: 30px; /* Увеличиваем радиус закругления */
-  padding: 50px; /* Увеличиваем внутренние отступы */
+  width: 380px;
+  border-radius: 30px;
+  padding: 50px;
   text-align: center;
-  border: 1px groove #6e6e6e; /* Добавляем черную обводку толщиной 2px */
+  border: 1px groove #6e6e6e;
   height: auto;
 }
 
 .filter-group {
   margin-bottom: 20px;
+}
+
+.filter-group input {
+  font-weight: bold;
+  display: block;
 }
 
 .filter-group label {

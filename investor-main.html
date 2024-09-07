@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>InsightHub - Main</title>
+    <title>InsightHub - Investor Main</title>
     <link
       href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Poppins:wght@400;700&display=swap"
       rel="stylesheet"
@@ -21,7 +21,9 @@
               <img src="assets/icons/default-image.png" alt="User Profile" />
             </div>
             <ul class="dropdown-menu" role="menu" aria-hidden="true">
-              <li role="menuitem"><span class="user-name">User</span></li>
+              <li role="menuitem">
+                <h2 id="loading-student-name">Loading...</h2>
+              </li>
               <li role="menuitem">
                 <a href="/investor-profile"
                   ><i class="profile-icon"></i> View Profile</a
@@ -36,55 +38,57 @@
       </div>
     </header>
 
-    <main>
-      <div class="main-container">
-        <aside class="sidebar">
-          <div class="filter-group">
-            <label for="university">University</label>
-            <select id="university">
-              <option>University</option>
-            </select>
-          </div>
-          <div class="filter-group">
-            <label for="major">Major</label>
-            <select id="major">
-              <option>Major</option>
-            </select>
-          </div>
-          <div class="filter-group">
-            <label for="investment">Investment ($/year)</label>
-            <select id="investment" name="investment">
-              <option value="Investment">Investment Value</option>
-              <option value="0-1000$">0$-1000$</option>
-              <option value="1000$-5000$">1000$-5000$</option>
-              <option value="5000$-10000$">5000$-10000$</option>
-              <option value="10000$-20000$">10000$-20000$</option>
-              <option value="20000$-30000$">20000$-30000$</option>
-              <option value="30000$-50000$">30000$-50000$</option>
-              <option value="50000$-80000$">50000$-80000$</option>
-            </select>
-          </div>
-        </aside>
-
-        <section class="student-list" id="student-list">
-          <div id="loading-indicator" style="display: none">
-            <div class="spinner"></div>
-            Loading...
-          </div>
-        </section>
-
-        <div id="student-popup" class="popup" style="display: none">
-          <div class="popup-content">
-            <span class="close-popup">&times;</span>
-            <div class="student-popup-avatar"></div>
-            <h3 id="popup-student-name"></h3>
-            <p id="popup-student-email"></p>
-          </div>
+    <main class="main-container">
+      <aside class="sidebar">
+        <div class="filter-group">
+          <label for="student-name-input">Student Name</label>
+          <input
+            type="text"
+            id="student-name-input"
+            placeholder="Search by name"
+          />
         </div>
+        <div class="ilter-group">
+          <label for="university">University</label>
+          <select id="university">
+            <option>University</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label for="major">Major</label>
+          <select id="major">
+            <option>Major</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label for="investment">Investment ($/year)</label>
+          <select id="investment" name="investment">
+            <option value="Investment">Investment Value</option>
+            <option value="0-1000$">0$-1000$</option>
+            <option value="1000$-5000$">1000$-5000$</option>
+            <option value="5000$-10000$">5000$-10000$</option>
+            <option value="10000$-20000$">10000$-20000$</option>
+            <option value="20000$-30000$">20000$-30000$</option>
+            <option value="30000$-50000$">30000$-50000$</option>
+            <option value="50000$-80000$">50000$-80000$</option>
+          </select>
+        </div>
+      </aside>
 
-        <div id="error-message" style="display: none; color: red"></div>
-      </div>
+      <section class="student-list" id="student-list">
+        <div id="loading-indicator" style="display: none">
+          <div class="spinner"></div>
+          Loading...
+        </div>
+      </section>
+
+      <div id="error-message" style="display: none; color: red"></div>
     </main>
+
+    <footer class="qwerty">
+      <p>&copy; 2024 InsightHub. All rights reserved.</p>
+    </footer>
+
     <script src="assets/js/investor-main.js"></script>
   </body>
 </html>

@@ -1,37 +1,33 @@
-const universitySelect = document.getElementById("university");
-const majorSelect = document.getElementById("major");
-const investmentSelect = document.getElementById("investment");
+let universitySelect, majorSelect, investmentSelect, studentNameInput;
+let allUsers = [];
+let allMajors = [];
 
 document.addEventListener("DOMContentLoaded", async () => {
   try {
+    // Initialize DOM elements
+    initializeFilterElements();
+
+    // Load data
     allMajors = await loadMajors();
-    populateDropdown("major", allMajors);
-    loadUsers();
-    loadUniversities();
+    await loadUniversities();
+    await loadUsers();
+
+    // Populate dropdowns
+    if (majorSelect) populateDropdown("major", allMajors);
 
     await updateIconBar();
 
     if (window.location.pathname === "/profile") {
       handleProfilePage();
     } else if (window.location.pathname === "/login") {
+      // Handle login page specifics if needed
     }
 
-    // Attach logout functionality (if applicable on this page)
-    const logoutLink = document.querySelector(
-      '.dropdown-menu a[href="/logout"]'
-    );
-    if (logoutLink) {
-      logoutLink.addEventListener("click", (event) => {
-        event.preventDefault();
-        logout();
-      });
-    }
+    // Attach event listeners
+    attachEventListeners();
 
-    if (universitySelect && majorSelect && investmentSelect) {
-      universitySelect.addEventListener("change", applyFilters);
-      majorSelect.addEventListener("change", applyFilters);
-      investmentSelect.addEventListener("change", applyFilters);
-    }
+    // Apply initial filters
+    applyFilters();
   } catch (error) {
     console.error("Error during page initialization:", error);
     showError(
@@ -40,20 +36,85 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 });
 
-let allUsers = [];
-let allMajors = [];
+function initializeFilterElements() {
+  universitySelect = document.getElementById("university");
+  majorSelect = document.getElementById("major");
+  investmentSelect = document.getElementById("investment");
+  studentNameInput = document.getElementById("student-name-input");
 
-function loadUsers() {
+  console.log("Filter elements initialization:");
+  console.log("universitySelect:", universitySelect);
+  console.log("majorSelect:", majorSelect);
+  console.log("investmentSelect:", investmentSelect);
+  console.log("studentNameInput:", studentNameInput);
+}
+
+function attachEventListeners() {
+  // Attach logout functionality (if applicable on this page)
+  const logoutLink = document.querySelector('.dropdown-menu a[href="/logout"]');
+  if (logoutLink) {
+    logoutLink.addEventListener("click", (event) => {
+      event.preventDefault();
+      logout();
+    });
+  }
+
+  // Attach filter event listeners
+  if (universitySelect)
+    universitySelect.addEventListener("change", applyFilters);
+  if (majorSelect) majorSelect.addEventListener("change", applyFilters);
+  if (investmentSelect)
+    investmentSelect.addEventListener("change", applyFilters);
+  if (studentNameInput)
+    studentNameInput.addEventListener("input", debounce(applyFilters, 300));
+}
+
+function attachEventListeners() {
+  // Attach logout functionality (if applicable on this page)
+  const logoutLink = document.querySelector('.dropdown-menu a[href="/logout"]');
+  if (logoutLink) {
+    logoutLink.addEventListener("click", (event) => {
+      event.preventDefault();
+      logout();
+    });
+  }
+
+  // Attach filter event listeners
+  if (universitySelect)
+    universitySelect.addEventListener("change", applyFilters);
+  if (majorSelect) majorSelect.addEventListener("change", applyFilters);
+  if (investmentSelect)
+    investmentSelect.addEventListener("change", applyFilters);
+  if (studentNameInput)
+    studentNameInput.addEventListener("input", debounce(applyFilters, 300));
+}
+
+function debounce(func, wait) {
+  let timeout;
+  return function executedFunction(...args) {
+    const later = () => {
+      clearTimeout(timeout);
+      func(...args);
+    };
+    clearTimeout(timeout);
+    timeout = setTimeout(later, wait);
+  };
+}
+
+async function loadUsers() {
   showLoadingIndicator();
 
-  fetch("/api/users") // Assuming you have a route to fetch all users
-    .then(handleFetchResponse)
-    .then((users) => {
-      allUsers = users;
-      updateStudentList(users);
-      hideLoadingIndicator();
-    })
-    .catch(handleError("Error loading user data"));
+  try {
+    const response = await fetch("/api/users");
+    if (!response.ok) {
+      throw new Error("Failed to fetch users");
+    }
+    allUsers = await response.json();
+    hideLoadingIndicator();
+  } catch (error) {
+    handleError("Error loading user data")(error);
+    hideLoadingIndicator();
+  }
 }
 
 function createUserItem(user, majorsData) {
@@ -406,46 +467,51 @@ function populateDropdown(dropdownId, data) {
 }
 
 function applyFilters() {
+  const missingElements = [];
+  if (!universitySelect) missingElements.push("university");
+  if (!majorSelect) missingElements.push("major");
+  if (!investmentSelect) missingElements.push("investment");
+  if (!studentNameInput) missingElements.push("student-name-input");
+
+  if (missingElements.length > 0) {
+    console.warn(
+      `The following filter elements are missing: ${missingElements.join(", ")}`
+    );
+    // Если элементы отсутствуют, возможно, мы находимся на странице, где фильтрация не нужна
+    return;
+  }
+
   const selectedUniversity = universitySelect.value;
   const selectedMajorName = majorSelect.value.trim().toLowerCase();
   const selectedInvestment = investmentSelect.value;
+  const searchName = studentNameInput.value.trim().toLowerCase();
 
-  const isUniversityFilterApplied = selectedUniversity !== "University";
-  const isMajorFilterApplied = selectedMajorName !== "major";
+  const filteredUsers = allUsers.filter((user) => {
+    const universityMatch =
+      selectedUniversity === "University" ||
+      user.educationPlace === selectedUniversity;
 
-  let filteredUsers = allUsers;
+    const majorMatch =
+      selectedMajorName === "major" ||
+      allMajors
+        .find((major) => major.id === parseInt(user.major))
+        ?.name.trim()
+        .toLowerCase() === selectedMajorName;
 
-  console.log("All Users:", allUsers);
+    const nameMatch = `${user.name} ${user.surname}`
+      .toLowerCase()
+      .includes(searchName);
 
-  // Фильтрация по университету и специальности
-  if (isUniversityFilterApplied || isMajorFilterApplied) {
-    filteredUsers = filteredUsers.filter((user) => {
-      const userMajorId = parseInt(user.major); // Получаем ID специальности пользователя
+    let investmentMatch = true;
+    if (selectedInvestment !== "Investment") {
+      const [min, max] = selectedInvestment
+        .split("-")
+        .map((val) => parseInt(val.replace("$", "").replace(",", "")));
+      investmentMatch = user.investment >= min && user.investment <= max;
+    }
 
-      // Находим ID специальности, соответствующий выбранному названию специальности
-      const selectedMajor = allMajors.find(
-        (major) => major.name.trim().toLowerCase() === selectedMajorName
-      );
-
-      const selectedMajorId = selectedMajor ? selectedMajor.id : null;
-
-      return (
-        (!isUniversityFilterApplied ||
-          user.educationPlace === selectedUniversity) &&
-        (!isMajorFilterApplied || userMajorId === selectedMajorId)
-      );
-    });
-  }
-
-  // Фильтрация по инвестициям
-  if (selectedInvestment !== "Investment") {
-    const [min, max] = selectedInvestment
-      .split("-")
-      .map((val) => parseInt(val.replace("$", "")));
-    filteredUsers = filteredUsers.filter(
-      (user) => user.investment >= min && user.investment <= max
-    );
-  }
+    return universityMatch && majorMatch && nameMatch && investmentMatch;
+  });
 
   updateStudentList(filteredUsers);
 
@@ -456,16 +522,17 @@ function applyFilters() {
   }
 }
 
-// Update the student list by applying filters and creating user items
-async function updateStudentList(filteredUsers) {
+function updateStudentList(filteredUsers) {
   const studentList = document.getElementById("student-list");
+  if (!studentList) {
+    console.error("Student list element not found");
+    return;
+  }
+
   studentList.innerHTML = "";
 
-  // Ensure that majors data is loaded before updating the student list
-  const majorsData = await loadMajors();
-
   filteredUsers.forEach((user) => {
-    const userItem = createUserItem(user, majorsData);
+    const userItem = createUserItem(user, allMajors);
     studentList.appendChild(userItem);
   });
 }
