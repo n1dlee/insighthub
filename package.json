@@ -18,6 +18,7 @@
     "express-session": "^1.18.0",
     "express-validator": "^7.1.0",
     "fs": "^0.0.1-security",
+    "http": "^0.0.1-security",
     "i": "^0.3.7",
     "iconv-lite": "^0.6.3",
     "install": "^0.13.0",
@@ -27,7 +28,8 @@
     "path": "^0.12.7",
     "pg": "^8.12.0",
     "query-string": "^9.1.0",
-    "sequelize": "^6.37.3"
+    "sequelize": "^6.37.3",
+    "socket.io": "^4.7.5"
   },
   "devDependencies": {
     "@types/node-fetch": "^2.6.11",

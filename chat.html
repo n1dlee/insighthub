@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>InsightHub - Main</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Poppins:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="assets/css/chat.css" />
+  </head>
+  <body>
+    <div id="loading-indicator"></div>
+
+    <header>
+      <div class="hcontainer">
+        <a class="h1-style" href="/main"><h1>InsightHub</h1></a>
+        <nav class="icon-bar">
+          <div class="user-profile-wrapper" aria-haspopup="true">
+            <div class="user-profile">
+              <img
+                id="navbar-user-avatar"
+                src="assets/icons/default-image.png"
+                alt="User Profile"
+              />
+            </div>
+            <ul class="dropdown-menu" role="menu" aria-hidden="true">
+              <li role="menuitem">
+                <h2 id="navbar-user-name">Loading...</h2>
+              </li>
+              <li role="menuitem">
+                <a href="/profile"><i class="profile-icon"></i> View Profile</a>
+              </li>
+              <li role="menuitem">
+                <a href="/logout"><i class="logout-icon"></i> Log Out</a>
+              </li>
+            </ul>
+          </div>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <div class="chat-container">
+        <div class="contacts-panel">
+          <h2>Contacts</h2>
+          <ul class="contacts-list"></ul>
+        </div>
+        <div class="chat-panel">
+          <div class="chat-header">
+            <h2 id="chat-with">Chat</h2>
+          </div>
+          <div class="chat-messages"></div>
+          <div class="chat-input">
+            <input
+              type="text"
+              id="message-input"
+              placeholder="Write a message..."
+            />
+            <button id="send-button">Send</button>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <footer class="qwerty">
+      <p>&copy; 2024 InsightHub. All rights reserved.</p>
+    </footer>
+
+    <script src="assets/js/chat.js"></script>
+  </body>
+</html>

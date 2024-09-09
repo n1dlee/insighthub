@@ -10,18 +10,23 @@ const investorPostRouter = require("./assets/routes/investor-post.routes");
 const studentPostRouter = require("./assets/routes/student-post.routes");
 const investorRouter = require("./assets/routes/investor.routes");
 const newsRouter = require("./assets/routes/news.router");
+const chatRouter = require("./assets/routes/chat.routes");
+const http = require("http");
+const socketIO = require("socket.io");
 
 const PORT = process.env.PORT || 8080;
 const app = express();
+
+const server = http.createServer(app);
+const io = socketIO(server);
 
 // Middleware
 app.use(express.json());
 app.use(cookieParser());
 
-// CORS Headers Middleware (Adjust as needed for your development/production setup)
 app.use(
   cors({
-    origin: true, // Allow any origin in development (not secure for production)
+    origin: true,
     credentials: true,
   })
 );
@@ -39,6 +44,7 @@ app.use("/api", userRouter);
 app.use("/api", investorPostRouter);
 app.use("/api", studentPostRouter);
 app.use("/api", investorRouter);
+app.use("/api", chatRouter);
 
 // Mount the news router
 app.use("/api", newsRouter);
@@ -115,6 +121,10 @@ app.get("/investor-profile", (req, res) => {
   res.sendFile(path.join(__dirname, "investor-profile.html"));
 });
 
+app.get("/chat", (req, res) => {
+  res.sendFile(path.join(__dirname, "chat.html"));
+});
+
 // Legal terms
 app.get("/legal-terms", (req, res) => {
   res.sendFile(path.join(__dirname, "legal-terms.html"));
@@ -128,12 +138,24 @@ app.post("/register", (req, res) => {
   });
 });
 
+io.on("connection", (socket) => {
+  console.log("A user connected");
+
+  socket.on("chat message", (msg) => {
+    io.emit("chat message", msg); // Broadcast the message to all connected clients
+  });
+
+  socket.on("disconnect", () => {
+    console.log("User disconnected");
+  });
+});
+
 // Sync models and start the server
 sequelize
   .sync({ alter: true })
   .then(() => {
     console.log("Database synced");
-    app.listen(PORT, () => console.log(`Server started on port ${PORT}`));
+    server.listen(PORT, () => console.log(`Server started on port ${PORT}`));
   })
   .catch((error) => {
     console.error("Unable to sync the database:", error);
