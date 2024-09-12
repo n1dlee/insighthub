@@ -97,7 +97,6 @@ function showChatContainer() {
   }
 }
 
-// Show empty chat state
 function showEmptyChatState() {
   chatContainer.style.display = "block";
   chatMessages.innerHTML = "<div class='empty-chat'>No messages yet</div>";

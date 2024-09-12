@@ -252,7 +252,7 @@ function addChatButton(profileDataId, currentUserId) {
     const existingButton = studentNameElement.querySelector(".chat-button");
     if (!existingButton) {
       const chatButton = document.createElement("a");
-      chatButton.href = `/chat/${profileDataId}`;
+      chatButton.href = `/chat?id=${profileDataId}`;
       chatButton.className = "chat-button";
 
       const chatIcon = document.createElement("img");

@@ -249,6 +249,10 @@ header nav ul li a {
   flex-direction: column;
 }
 
+.empty-chat {
+  /* Вроде сюда писать стили */
+}
+
 .chat-header {
   background-color: #f4f4f4;
   padding: 10px 20px;
