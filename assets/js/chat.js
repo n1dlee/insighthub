@@ -1,12 +1,15 @@
-// chat.js
-
-// Get references to DOM elements
 const messageInput = document.getElementById("message-input");
 const sendButton = document.getElementById("send-button");
 const chatMessages = document.querySelector(".chat-messages");
 const contactsList = document.querySelector(".contacts-list");
+const searchInput = document.getElementById("search-input");
+const searchResults = document.getElementById("search-results");
+const chatAvatar = document.getElementById("chat-avatar");
+const chatWith = document.getElementById("chat-with");
+const chatContainer = document.querySelector(".chat-container");
 
 let currentConversationId = null;
+let currentUser = null;
 
 // Load and render the user's conversations
 async function loadConversations() {
@@ -14,7 +17,8 @@ async function loadConversations() {
     const conversations = await window.chatService.getConversations();
     renderConversations(conversations);
   } catch (error) {
-    handleError("Error loading conversations:", error);
+    console.warn("Error loading conversations:", error);
+    renderConversations([]); // Render empty state
   }
 }
 
@@ -22,42 +26,104 @@ async function loadConversations() {
 function renderConversations(conversations) {
   contactsList.innerHTML = "";
 
-  conversations.forEach((conversation) => {
-    const otherParticipant = conversation.participant1.id === currentUser.id ? conversation.participant2 : conversation.participant1;
-    const contactItem = document.createElement("li");
-    contactItem.classList.add("contact-item");
-    contactItem.innerHTML = `
-      <img class="contact-avatar" src="${otherParticipant.profile_image || "/assets/icons/default-image.png"}" alt="${otherParticipant.name} ${otherParticipant.surname}">
-      <div class="contact-name">${otherParticipant.name} ${otherParticipant.surname}</div>
-    `;
-    contactItem.addEventListener("click", () => loadConversation(conversation.id));
-    contactsList.appendChild(contactItem);
-  });
+  if (conversations.length === 0) {
+    const emptyState = document.createElement("li");
+    emptyState.textContent = "No conversations yet";
+    emptyState.classList.add("empty-state");
+    contactsList.appendChild(emptyState);
+  } else {
+    conversations.forEach((conversation) => {
+      const otherParticipant =
+        conversation.participant1.id === currentUser.id
+          ? conversation.participant2
+          : conversation.participant1;
+      const contactItem = createContactItem(otherParticipant, () =>
+        loadConversation(conversation.id)
+      );
+      contactsList.appendChild(contactItem);
+    });
+  }
+}
+
+// Create a contact item element
+function createContactItem(user, onClick) {
+  const contactItem = document.createElement("li");
+  contactItem.classList.add("contact-item");
+  const userImageSrc = `assets/uploads/${user.id}/image.png`;
+  contactItem.innerHTML = `
+    <img class="contact-avatar" src="${userImageSrc}" alt="${user.name} ${user.surname}" onerror="this.src='assets/icons/default-avatar.png';">
+    <div class="contact-name">${user.name} ${user.surname}</div>
+  `;
+  contactItem.addEventListener("click", onClick);
+  return contactItem;
 }
 
 // Load and render the messages for a specific conversation
 async function loadConversation(conversationId) {
   try {
     currentConversationId = conversationId;
-    const conversation = await window.chatService.getConversation(conversationId);
+    const conversation = await window.chatService.getConversation(
+      conversationId
+    );
     renderMessages(conversation.chats);
+    updateChatHeader(conversation);
+    showChatContainer();
   } catch (error) {
-    handleError("Error loading conversation:", error);
+    console.warn("Error loading conversation:", error);
+    showEmptyChatState();
   }
+}
+
+// Update the chat header with the current conversation participant
+function updateChatHeader(conversation) {
+  const otherParticipant =
+    conversation.participant1.id === currentUser.id
+      ? conversation.participant2
+      : conversation.participant1;
+  const userImageSrc = `assets/uploads/${otherParticipant.id}/image.png`;
+  chatAvatar.src = userImageSrc;
+  chatAvatar.onerror = () => {
+    chatAvatar.src = "assets/icons/default-avatar.png";
+  };
+  chatWith.textContent = `${otherParticipant.name} ${otherParticipant.surname}`;
+}
+
+// Show the chat container
+function showChatContainer() {
+  chatContainer.style.display = "block";
+  const placeholderElement = document.querySelector(".chat-placeholder");
+  if (placeholderElement) {
+    placeholderElement.style.display = "none";
+  }
+}
+
+// Show empty chat state
+function showEmptyChatState() {
+  chatContainer.style.display = "block";
+  chatMessages.innerHTML = "<div class='empty-chat'>No messages yet</div>";
+  chatWith.textContent = "New Conversation";
+  chatAvatar.src = "assets/icons/default-avatar.png";
 }
 
 // Render the messages in the chat window
 function renderMessages(messages) {
   chatMessages.innerHTML = "";
 
-  messages.forEach((message) => {
-    const messageElement = document.createElement("div");
-    messageElement.classList.add("message", message.senderId === currentUser.id ? "sent" : "received");
-    messageElement.innerHTML = `
-      <div class="message-content">${message.content}</div>
-    `;
-    chatMessages.appendChild(messageElement);
-  });
+  if (messages.length === 0) {
+    chatMessages.innerHTML = "<div class='empty-chat'>No messages yet</div>";
+  } else {
+    messages.forEach((message) => {
+      const messageElement = document.createElement("div");
+      messageElement.classList.add(
+        "message",
+        message.senderId === currentUser.id ? "sent" : "received"
+      );
+      messageElement.innerHTML = `
+        <div class="message-content">${message.content}</div>
+      `;
+      chatMessages.appendChild(messageElement);
+    });
+  }
 
   // Scroll to the bottom of the chat window
   chatMessages.scrollTop = chatMessages.scrollHeight;
@@ -73,21 +139,66 @@ async function sendMessage() {
       // Refresh the conversation to display the new message
       loadConversation(currentConversationId);
     } catch (error) {
-      handleError("Error sending message:", error);
+      console.warn("Error sending message:", error);
+      alert("Failed to send message. Please try again.");
     }
   }
 }
 
-// Attach event listener to send button
-sendButton.addEventListener("click", sendMessage);
-
-// Allow sending message with Enter key
-messageInput.addEventListener("keypress", (event) => {
-  if (event.key === "Enter") {
-    event.preventDefault();
-    sendMessage();
+// Search for users
+async function searchUsers(query) {
+  try {
+    const users = await window.chatService.searchUsers(query);
+    renderSearchResults(users);
+  } catch (error) {
+    console.warn("Error searching users:", error);
+    renderSearchResults([]);
   }
-});
+}
+
+// Render search results
+function renderSearchResults(users) {
+  searchResults.innerHTML = "";
+  if (users.length === 0) {
+    const noResults = document.createElement("div");
+    noResults.textContent = "No users found";
+    noResults.classList.add("no-results");
+    searchResults.appendChild(noResults);
+  } else {
+    users.forEach((user) => {
+      const resultItem = createContactItem(user, () =>
+        startOrLoadConversation(user)
+      );
+      searchResults.appendChild(resultItem);
+    });
+  }
+  searchResults.style.display = "block";
+}
+
+// Start a new conversation or load an existing one with a user
+async function startOrLoadConversation(user) {
+  try {
+    const conversations = await window.chatService.getConversations();
+    const existingConversation = conversations.find(
+      (conv) =>
+        conv.participant1.id === user.id || conv.participant2.id === user.id
+    );
+
+    if (existingConversation) {
+      loadConversation(existingConversation.id);
+    } else {
+      const conversation = await window.chatService.startConversation(user.id);
+      currentConversationId = conversation.id;
+      loadConversation(conversation.id);
+    }
+
+    searchResults.style.display = "none";
+    searchInput.value = "";
+  } catch (error) {
+    console.warn("Error starting/loading conversation:", error);
+    showEmptyChatState();
+  }
+}
 
 // Load current user data
 async function loadCurrentUserData() {
@@ -97,7 +208,11 @@ async function loadCurrentUserData() {
     });
 
     if (!response.ok) {
-      throw new Error(response.status === 401 ? "Unauthorized. Please log in." : "Network response was not ok.");
+      throw new Error(
+        response.status === 401
+          ? "Unauthorized. Please log in."
+          : "Network response was not ok."
+      );
     }
 
     const userData = await response.json();
@@ -128,13 +243,13 @@ async function updateIconBar() {
       userNameElement.textContent = "Loading...";
     }
 
-    const userData = await loadCurrentUserData();
-    window.currentUser = userData; // Store current user data globally
+    currentUser = await loadCurrentUserData();
 
     if (userProfileWrapper) {
-      const profileImage = userProfileWrapper.querySelector(".user-profile img");
-      if (profileImage && userData.id) {
-        const userImageSrc = `assets/uploads/${userData.id}/image.png`;
+      const profileImage =
+        userProfileWrapper.querySelector(".user-profile img");
+      if (profileImage && currentUser.id) {
+        const userImageSrc = `assets/uploads/${currentUser.id}/image.png`;
         profileImage.src = userImageSrc;
         profileImage.onerror = () => {
           console.warn("Failed to load user profile image. Using default.");
@@ -143,13 +258,15 @@ async function updateIconBar() {
       }
     }
 
-    if (userNameElement && userData) {
-      userNameElement.textContent = `${userData.name || ""} ${userData.surname || ""}`.trim() || "N/A";
+    if (userNameElement && currentUser) {
+      userNameElement.textContent =
+        `${currentUser.name || ""} ${currentUser.surname || ""}`.trim() ||
+        "N/A";
     }
 
     const profileLink = document.querySelector('a[href="/profile"]');
-    if (profileLink && userData && userData.id) {
-      profileLink.href = `/profile?id=${userData.id}`;
+    if (profileLink && currentUser && currentUser.id) {
+      profileLink.href = `/profile?id=${currentUser.id}`;
     }
   } catch (error) {
     handleError("Error updating icon bar:", error);
@@ -181,7 +298,6 @@ async function logout() {
   }
 }
 
-// Attach event listeners
 function attachEventListeners() {
   const logoutLink = document.querySelector('.dropdown-menu a[href="/logout"]');
   if (logoutLink) {
@@ -190,6 +306,24 @@ function attachEventListeners() {
       logout();
     });
   }
+
+  sendButton.addEventListener("click", sendMessage);
+
+  messageInput.addEventListener("keypress", (event) => {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      sendMessage();
+    }
+  });
+
+  searchInput.addEventListener("input", (event) => {
+    const query = event.target.value.trim();
+    if (query.length >= 2) {
+      searchUsers(query);
+    } else {
+      searchResults.style.display = "none";
+    }
+  });
 }
 
 // Initialize the chat application
@@ -199,7 +333,8 @@ async function initChat() {
     await loadConversations();
     attachEventListeners();
   } catch (error) {
-    handleError("Error initializing chat:", error);
+    console.warn("Error initializing chat:", error);
+    showEmptyChatState();
   }
 }
 

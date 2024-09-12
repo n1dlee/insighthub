@@ -49,6 +49,7 @@ async function loadProfile(profileUserId, currentUserData) {
     }
 
     addChangeProfileIcon(profileUserId, currentUserData.id);
+    addChatButton(profileUserId, currentUserData.id);
 
     const majorsData = await loadMajors();
 
@@ -101,6 +102,7 @@ async function populateProfile(profileData, currentUserId, majorsData) {
       profileData.ielts || "N/A";
 
     addChangeProfileIcon(profileData.id, currentUserId);
+    addChatButton(profileData.id, currentUserId);
 
     document.getElementById("student-achievements").textContent =
       profileData.achievements || "Achievements not provided";
@@ -240,6 +242,26 @@ function addChangeProfileIcon(profileDataId, currentUserId) {
 
       changeProfileLink.appendChild(changeProfileIcon);
       studentNameElement.appendChild(changeProfileLink);
+    }
+  }
+}
+
+function addChatButton(profileDataId, currentUserId) {
+  const studentNameElement = document.getElementById("student-name");
+  if (profileDataId !== currentUserId && studentNameElement) {
+    const existingButton = studentNameElement.querySelector(".chat-button");
+    if (!existingButton) {
+      const chatButton = document.createElement("a");
+      chatButton.href = `/chat/${profileDataId}`;
+      chatButton.className = "chat-button";
+
+      const chatIcon = document.createElement("img");
+      chatIcon.src = "assets/icons/chat_btn.png";
+      chatIcon.alt = "Chat";
+      chatIcon.className = "chat-icon";
+
+      chatButton.appendChild(chatIcon);
+      studentNameElement.appendChild(chatButton);
     }
   }
 }

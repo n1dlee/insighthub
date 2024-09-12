@@ -180,6 +180,18 @@ header nav ul li a {
   background-color: transparent; /* Set background to transparent on hover */
 }
 
+.chat_btn {
+  position: absolute;
+  left: 80%;
+  top: 52%;
+  transform: translate(-50%, -50%);
+}
+
+#chat_button {
+  width: 64px;
+  height: 64px;
+}
+
 /* Общие стили для чата */
 .chat-container {
   display: flex;
@@ -298,6 +310,67 @@ header nav ul li a {
   border-radius: 5px;
   cursor: pointer;
 }
+
+/* Existing styles remain the same */
+
+.search-container {
+  margin-bottom: 1rem;
+  position: relative;
+}
+
+#search-input {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 1rem;
+}
+
+.search-results {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background-color: white;
+  border: 1px solid #ccc;
+  border-top: none;
+  border-radius: 0 0 4px 4px;
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 1000;
+  display: none;
+}
+
+.search-results .contact-item {
+  padding: 0.5rem;
+  cursor: pointer;
+}
+
+.search-results .contact-item:hover {
+  background-color: #f0f0f0;
+}
+
+.chat-header {
+  display: flex;
+  align-items: center;
+  padding: 1rem;
+  background-color: #f0f0f0;
+  border-bottom: 1px solid #ccc;
+}
+
+#chat-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  margin-right: 1rem;
+}
+
+#chat-with {
+  margin: 0;
+  font-size: 1.2rem;
+}
+
+/* Add any additional styles as needed */
 
 /* Footer styles */
 .qwerty {

@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>InsightHub - Main</title>
+    <title>InsightHub - Chat</title>
     <link
       href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Poppins:wght@400;700&display=swap"
       rel="stylesheet"
@@ -16,6 +16,11 @@
     <header>
       <div class="hcontainer">
         <a class="h1-style" href="/main"><h1>InsightHub</h1></a>
+        <div class="chat_btn">
+          <a href="/chat">
+            <img id="chat_button" src="assets/icons/chat_btn.png" />
+          </a>
+        </div>
         <nav class="icon-bar">
           <div class="user-profile-wrapper" aria-haspopup="true">
             <div class="user-profile">
@@ -45,11 +50,24 @@
       <div class="chat-container">
         <div class="contacts-panel">
           <h2>Contacts</h2>
+          <div class="search-container">
+            <input
+              type="text"
+              id="search-input"
+              placeholder="Search students/investors..."
+            />
+            <div id="search-results" class="search-results"></div>
+          </div>
           <ul class="contacts-list"></ul>
         </div>
         <div class="chat-panel">
           <div class="chat-header">
-            <h2 id="chat-with">Chat</h2>
+            <img
+              id="chat-avatar"
+              src="assets/icons/default-image.png"
+              alt="Chat Avatar"
+            />
+            <h2 id="chat-with">Select a contact</h2>
           </div>
           <div class="chat-messages"></div>
           <div class="chat-input">
@@ -68,7 +86,6 @@
       <p>&copy; 2024 InsightHub. All rights reserved.</p>
     </footer>
 
-    
     <script src="assets/js/frontend-chat-service.js"></script>
     <script src="assets/js/chat.js"></script>
   </body>

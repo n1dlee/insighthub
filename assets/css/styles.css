@@ -101,6 +101,18 @@ header nav ul li a {
   padding: 12px 30px; /* Увеличиваем отступы внутри кнопки */
 }
 
+.chat_btn {
+  position: absolute;
+  left: 80%;
+  top: 52%;
+  transform: translate(-50%, -50%);
+}
+
+#chat_button {
+  width: 64px;
+  height: 64px;
+}
+
 /* Адаптивные кнопки */
 .btn-signin,
 .hero-buttons a {
@@ -1634,6 +1646,18 @@ input[type="checkbox"] {
   color: #000;
   margin-top: 12px;
   font: 400 16px/22px Poppins, sans-serif;
+}
+
+.chat-button {
+  display: inline-block;
+  margin-left: 10px;
+  vertical-align: middle;
+}
+
+.chat-icon {
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
 }
 
 /* Footer styles */
