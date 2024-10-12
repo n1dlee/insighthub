@@ -1382,6 +1382,26 @@ input[type="checkbox"] {
   background-color: #ccc; /* Цвет фона по умолчанию */
 }
 
+.pagination {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.page-button {
+  margin: 0 5px;
+  padding: 5px 10px;
+  border: 1px solid #ccc;
+  background-color: #f8f8f8;
+  cursor: pointer;
+}
+
+.page-button.active {
+  background-color: #28ac22;
+  color: white;
+  border-color: #28ac22;
+}
+
 /** profile page styles **/
 
 .profile-info {

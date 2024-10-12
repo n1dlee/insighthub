@@ -1,6 +1,8 @@
 let universitySelect, majorSelect, investmentSelect, studentNameInput;
 let allUsers = [];
 let allMajors = [];
+let currentPage = 1;
+const studentsPerPage = 15;
 
 document.addEventListener("DOMContentLoaded", async () => {
   try {
@@ -458,7 +460,6 @@ function applyFilters() {
     console.warn(
       `The following filter elements are missing: ${missingElements.join(", ")}`
     );
-    // Если элементы отсутствуют, возможно, мы находимся на странице, где фильтрация не нужна
     return;
   }
 
@@ -494,13 +495,24 @@ function applyFilters() {
     return universityMatch && majorMatch && nameMatch && investmentMatch;
   });
 
-  updateStudentList(filteredUsers);
+  // Randomize the filtered users
+  const randomizedUsers = shuffleArray(filteredUsers);
 
-  if (filteredUsers.length === 0) {
+  updateStudentList(randomizedUsers);
+
+  if (randomizedUsers.length === 0) {
     showError("No students found matching the selected filters.");
   } else {
     hideError();
   }
+}
+
+function shuffleArray(array) {
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+  return array;
 }
 
 function updateStudentList(filteredUsers) {
@@ -512,10 +524,42 @@ function updateStudentList(filteredUsers) {
 
   studentList.innerHTML = "";
 
-  filteredUsers.forEach((user) => {
+  const startIndex = (currentPage - 1) * studentsPerPage;
+  const endIndex = startIndex + studentsPerPage;
+  const usersToShow = filteredUsers.slice(startIndex, endIndex);
+
+  usersToShow.forEach((user) => {
     const userItem = createUserItem(user, allMajors);
     studentList.appendChild(userItem);
   });
+
+  updatePagination(filteredUsers.length);
+}
+
+function updatePagination(totalUsers) {
+  const totalPages = Math.ceil(totalUsers / studentsPerPage);
+  const paginationContainer = document.getElementById("pagination-container");
+
+  if (!paginationContainer) {
+    console.error("Pagination container not found");
+    return;
+  }
+
+  paginationContainer.innerHTML = "";
+
+  for (let i = 1; i <= totalPages; i++) {
+    const pageButton = document.createElement("button");
+    pageButton.textContent = i;
+    pageButton.classList.add("page-button");
+    if (i === currentPage) {
+      pageButton.classList.add("active");
+    }
+    pageButton.addEventListener("click", () => {
+      currentPage = i;
+      applyFilters();
+    });
+    paginationContainer.appendChild(pageButton);
+  }
 }
 
 function showLoadingIndicator() {

@@ -9,9 +9,55 @@
       rel="stylesheet"
     />
     <link rel="stylesheet" href="assets/css/chat.css" />
+    <style>
+      #development-notice {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(5px);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+      }
+      #development-notice-content {
+        background-color: #ffcc00;
+        color: #000;
+        padding: 20px;
+        border-radius: 10px;
+        text-align: center;
+        font-size: 24px;
+        font-weight: bold;
+      }
+      #go-back-button {
+        margin-top: 30px;
+        padding: 10px 20px;
+        font-size: 18px;
+        background-color: #000;
+        color: #fff;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+      }
+      #go-back-button:hover {
+        background-color: #333;
+      }
+      #go-back-button p {
+        margin-top: 30px;
+      }
+    </style>
   </head>
   <body>
-    <div id="loading-indicator"></div>
+    <div id="development-notice">
+      <div id="development-notice-content">
+        <p>In Development Process</p>
+        <a href="/main" id="go-back-button">Go to Main page</a>
+      </div>
+    </div>
 
     <header>
       <div class="hcontainer">
@@ -86,7 +132,9 @@
       <p>&copy; 2024 InsightHub. All rights reserved.</p>
     </footer>
 
+    <!---
     <script src="assets/js/frontend-chat-service.js"></script>
-    <script src="assets/js/chat.js"></script>
+    <script src="assets/js/chat.js"></script> 
+    -->
   </body>
 </html>
