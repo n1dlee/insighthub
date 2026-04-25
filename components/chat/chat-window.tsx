@@ -158,7 +158,10 @@ export function ChatWindow({ conversationId, currentUserId, other, initialMessag
                   // Safe: content was passed through DOMPurify
                   dangerouslySetInnerHTML={{ __html: safeContent }}
                 />
-                <p className={`text-[10px] text-[#9CA3AF] mt-1 ${isMe ? "text-right" : "text-left"} opacity-0 group-hover:opacity-100 transition-opacity`}>
+                <p
+                  suppressHydrationWarning
+                  className={`text-[10px] text-[#9CA3AF] mt-1 ${isMe ? "text-right" : "text-left"} opacity-0 group-hover:opacity-100 transition-opacity`}
+                >
                   {formatRelativeTime(msg.createdAt)}
                 </p>
               </div>
