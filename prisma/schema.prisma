@@ -1,0 +1,227 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ─── Enums ────────────────────────────────────────────────────────────────
+
+enum UserRole {
+  STUDENT
+  INVESTOR
+}
+
+enum SenderType {
+  STUDENT
+  INVESTOR
+}
+
+enum PrimaryDegree {
+  School
+  Bachelors
+  Masters
+  PhD
+}
+
+enum ProficiencyLevel {
+  Beginner
+  Intermediate
+  Advanced
+  Expert
+}
+
+// ─── Student ──────────────────────────────────────────────────────────────
+
+model Student {
+  id              Int      @id @default(autoincrement())
+  name            String
+  surname         String
+  middle          String?
+  age             Int
+  email           String   @unique
+  password        String
+  livesOutsideUS  Boolean  @default(false)
+  educationPlace  String
+  primaryDegree   PrimaryDegree @default(Bachelors)
+  major           String?
+  bio             String?
+  achievements    String?
+  profileImage    String?
+  gpa             Float?
+  sat             Int?
+  ielts           Float?
+  location        String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  posts           StudentPost[]
+  sentMessages    Message[]     @relation("MessageSender")
+  conversations1  Conversation[] @relation("Participant1")
+  conversations2  Conversation[] @relation("Participant2")
+  connections     StudentInvestorConnection[]
+
+  @@index([email])
+  @@map("students")
+}
+
+// ─── Investor ─────────────────────────────────────────────────────────────
+
+model Investor {
+  id             Int      @id @default(autoincrement())
+  name           String
+  surname        String
+  middle         String?
+  age            Int
+  email          String   @unique
+  password       String
+  livesOutsideUS Boolean  @default(false)
+  companyName    String
+  jobFunc        String
+  bio            String?
+  profileImage   String?
+  location       String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  // Relations
+  posts           InvestorPost[]
+  workHistory     WorkHistory[]
+  workExperience  WorkExperience[]
+  connections     StudentInvestorConnection[]
+
+  @@index([email])
+  @@map("investors")
+}
+
+// ─── University & Major (reference data) ─────────────────────────────────
+
+model University {
+  id       Int      @id @default(autoincrement())
+  name     String
+  location String?              // ← FIX: was missing in original model
+  createdAt DateTime @default(now())
+
+  @@map("universities")
+}
+
+model Major {
+  id        Int      @id @default(autoincrement())
+  name      String
+  createdAt DateTime @default(now())
+
+  @@map("majors")
+}
+
+// ─── Posts ────────────────────────────────────────────────────────────────
+
+model StudentPost {
+  id        Int      @id @default(autoincrement())
+  title     String
+  content   String
+  studentId Int
+  student   Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@index([studentId])
+  @@map("student_posts")
+}
+
+model InvestorPost {
+  id         Int      @id @default(autoincrement())
+  title      String
+  content    String
+  investorId Int
+  investor   Investor @relation(fields: [investorId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+
+  @@index([investorId])
+  @@map("investor_posts")
+}
+
+// ─── Chat ─────────────────────────────────────────────────────────────────
+
+model Conversation {
+  id            Int       @id @default(autoincrement())
+  participant1Id Int
+  participant2Id Int
+  lastMessageAt DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  participant1  Student   @relation("Participant1", fields: [participant1Id], references: [id])
+  participant2  Student   @relation("Participant2", fields: [participant2Id], references: [id])
+  messages      Message[]
+
+  @@unique([participant1Id, participant2Id])
+  @@index([participant1Id])
+  @@index([participant2Id])
+  @@map("conversations")
+}
+
+model Message {
+  id             Int        @id @default(autoincrement())
+  conversationId Int
+  senderId       Int
+  senderType     SenderType @default(STUDENT)
+  content        String
+  createdAt      DateTime   @default(now())
+
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  student        Student?     @relation("MessageSender", fields: [senderId], references: [id])
+
+  @@index([conversationId])
+  @@index([senderId])
+  @@map("messages")
+}
+
+// ─── Investor Work Data ───────────────────────────────────────────────────
+
+model WorkHistory {
+  id               Int       @id @default(autoincrement())
+  investorId       Int
+  companyName      String
+  position         String
+  startDate        DateTime
+  endDate          DateTime?
+  responsibilities String?
+  createdAt        DateTime  @default(now())
+
+  investor         Investor  @relation(fields: [investorId], references: [id], onDelete: Cascade)
+
+  @@index([investorId])
+  @@map("work_history")
+}
+
+model WorkExperience {
+  id                Int              @id @default(autoincrement())
+  investorId        Int
+  skillName         String
+  yearsOfExperience Int
+  proficiencyLevel  ProficiencyLevel @default(Intermediate)
+  description       String?
+  createdAt         DateTime         @default(now())
+
+  investor          Investor         @relation(fields: [investorId], references: [id], onDelete: Cascade)
+
+  @@index([investorId])
+  @@map("work_experience")
+}
+
+// ─── Connections ──────────────────────────────────────────────────────────
+
+model StudentInvestorConnection {
+  studentId        Int
+  investorId       Int
+  connectionStatus String   @default("Pending")
+  createdAt        DateTime @default(now())
+
+  student          Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  investor         Investor @relation(fields: [investorId], references: [id], onDelete: Cascade)
+
+  @@id([studentId, investorId])
+  @@map("student_investor_connections")
+}
