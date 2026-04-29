@@ -6,9 +6,9 @@ import DOMPurify from "dompurify";
 import { toast } from "sonner";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { useSocket } from "@/hooks/use-socket";
+import { usePusher } from "@/hooks/use-pusher";
 import { getInitials, getProfileImageUrl, formatRelativeTime } from "@/lib/utils";
-import type { SocketMessage } from "@/lib/socket-server";
+import type { SocketMessage } from "@/hooks/use-pusher";
 
 interface Message {
   id:             number;
@@ -57,7 +57,7 @@ export function ChatWindow({ conversationId, currentUserId, other, initialMessag
     if (userId !== currentUserId) setOtherTyping(false);
   }, [currentUserId]);
 
-  const { broadcastMessage, emitTypingStart, emitTypingStop } = useSocket({
+  const { broadcastMessage, emitTypingStart, emitTypingStop } = usePusher({
     conversationId,
     onMessage:     handleNewMessage,
     onTypingStart: handleTypingStart,
@@ -88,7 +88,7 @@ export function ChatWindow({ conversationId, currentUserId, other, initialMessag
       if (!res.ok) { toast.error(data.error ?? "Failed to send"); return; }
       if (data.message) {
         setMessages(prev => [...prev, data.message!]);
-        // Broadcast to other participants via Socket.io
+        // Server already broadcasts to other participants via Pusher
         broadcastMessage({ ...data.message!, createdAt: new Date(data.message!.createdAt).toISOString() });
       }
     } catch { toast.error("Network error"); }

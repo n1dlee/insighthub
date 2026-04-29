@@ -1,6 +1,5 @@
 import { NextRequest } from "next/server";
-import { writeFile, mkdir, unlink, readdir } from "fs/promises";
-import path from "path";
+import { put } from "@vercel/blob";
 import { randomUUID } from "crypto";
 import { prisma } from "@/lib/prisma";
 import { apiError, apiOk } from "@/lib/utils";
@@ -19,7 +18,6 @@ export async function POST(req: NextRequest) {
     return apiError("role query param must be 'student' or 'investor'", 400);
   }
 
-  // Only let users upload for their own account
   const userId = session.user.id;
 
   const formData = await req.formData().catch(() => null);
@@ -36,36 +34,27 @@ export async function POST(req: NextRequest) {
   }
 
   const ext      = file.type.split("/")[1].replace("jpeg", "jpg");
-  const filename = `${randomUUID()}.${ext}`;   // ← FIX: UUID name, never overwrites
+  const filename = `${randomUUID()}.${ext}`;
+  const blobPath = `profiles/${role}/${userId}/${filename}`;
 
-  const uploadDir = path.join(process.cwd(), "public", "uploads", role, userId);
-  await mkdir(uploadDir, { recursive: true });
+  // Upload to Vercel Blob Storage
+  const blob = await put(blobPath, file, {
+    access:      "public",
+    contentType: file.type,
+  });
 
-  // Delete old profile image to prevent orphaned files
-  try {
-    const existing = await readdir(uploadDir);
-    await Promise.all(existing.map(f => unlink(path.join(uploadDir, f))));
-  } catch {
-    // Dir was empty — fine
-  }
-
-  const bytes  = await file.arrayBuffer();
-  const buffer = Buffer.from(bytes);
-  await writeFile(path.join(uploadDir, filename), buffer);
-
-  // Update DB with new filename
+  // Save full Blob URL to database
   if (role === "student") {
     await prisma.student.update({
       where: { id: Number(userId) },
-      data:  { profileImage: filename },
+      data:  { profileImage: blob.url },
     });
   } else {
     await prisma.investor.update({
       where: { id: Number(userId) },
-      data:  { profileImage: filename },
+      data:  { profileImage: blob.url },
     });
   }
 
-  const imageUrl = `/uploads/${role}/${userId}/${filename}`;
-  return apiOk({ filename, imageUrl });
+  return apiOk({ imageUrl: blob.url });
 }

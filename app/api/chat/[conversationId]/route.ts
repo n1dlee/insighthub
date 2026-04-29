@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { SendMessageSchema } from "@/lib/validations";
 import { apiError, apiOk } from "@/lib/utils";
 import { auth } from "@/lib/auth";
+import { pusherServer } from "@/lib/pusher";
 
 type Ctx = { params: Promise<{ conversationId: string }> };
 
@@ -71,6 +72,19 @@ export async function POST(req: NextRequest, { params }: Ctx) {
       data:  { lastMessageAt: new Date() },
     }),
   ]);
+
+  // Broadcast to all participants via Pusher (fire-and-forget)
+  await pusherServer.trigger(
+    `private-conversation-${convId}`,
+    "message:received",
+    {
+      id:             message.id,
+      conversationId: convId,
+      senderId:       message.senderId,
+      content:        message.content,
+      createdAt:      message.createdAt.toISOString(),
+    }
+  );
 
   return apiOk({ message }, 201);
 }

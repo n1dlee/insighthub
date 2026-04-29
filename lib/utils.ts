@@ -34,13 +34,18 @@ export function formatRelativeTime(date: Date | string): string {
   return formatDate(date);
 }
 
-/** Get profile image URL or null */
+/** Get profile image URL or null.
+ *  Handles both legacy local paths (filename only) and
+ *  new Vercel Blob full URLs (https://...). */
 export function getProfileImageUrl(
   role: "student" | "investor",
   id: number,
   filename: string | null | undefined
 ): string | null {
   if (!filename) return null;
+  // New format: full Vercel Blob URL
+  if (filename.startsWith("http")) return filename;
+  // Legacy format: just filename stored locally
   return `/uploads/${role}/${id}/${filename}`;
 }
 

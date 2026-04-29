@@ -19,7 +19,7 @@ const nextConfig: NextConfig = {
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
               "font-src 'self' https://fonts.gstatic.com",
               "img-src 'self' data: blob: https:",
-              "connect-src 'self' ws: wss: https://newsapi.org",
+              "connect-src 'self' ws: wss: https://newsapi.org https://*.pusher.com wss://*.pusher.com https://*.pusherapp.com",
             ].join("; "),
           },
         ],
@@ -27,10 +27,11 @@ const nextConfig: NextConfig = {
     ];
   },
 
-  // Images: allow local uploads
+  // Images: allow Vercel Blob and other external sources
   images: {
     remotePatterns: [
       { protocol: "https", hostname: "**" },
+      { protocol: "https", hostname: "*.blob.vercel-storage.com" },
     ],
   },
 
